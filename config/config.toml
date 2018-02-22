@@ -1,0 +1,6 @@
+[server]
+port = ":8999"
+
+[db]
+conn = "ocss.h:27017"
+name = "ocss"
