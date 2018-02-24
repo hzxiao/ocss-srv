@@ -6,7 +6,7 @@ import (
 )
 
 func init() {
-	err := InitDB("127.0.0.1:27017", "ocss_test")
+	err := InitDB("111.230.242.177:27017", "ocss_test")
 	if err != nil {
 		panic(err)
 	}
