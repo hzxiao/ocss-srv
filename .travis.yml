@@ -12,4 +12,6 @@ addons:
 script: go test -v ./...
   
 after_success:
+  - eval "$(ssh-agent)"
+  - ssh-add ~/.ssh/id_rsa
   - ssh jks@111.230.242.177 'cd $GOPATH/src/github.com/hzxiao/ocss-srv && sudo chmod +x ./publish.sh && ./publish.sh'
