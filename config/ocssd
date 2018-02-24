@@ -1,0 +1,70 @@
+#!/bin/bash
+#
+# ocssd        Startup script for ocssd server.
+#
+# chkconfig: 345 90 4
+
+# Source function library.
+. /etc/init.d/functions
+
+RETVAL=0
+srv_h=/home/jks/app/ocss
+usr_n=jks
+exe_n=ocss
+srv_n=ocssd
+arg_l=""
+pre_s=
+if [ "$pre_s" == "" ];then
+    pre_s=$ENV_SRVD_PRE
+fi
+
+export LD_LIBRARY_PATH=/usr/local/lib:/usr/lib:$srv_h
+
+##
+pid_f=/var/run/$srv_n.pid
+lck_f=/var/lock/$srv_n.lock
+exec=$srv_h/$exe_n
+if [ ! -x $exec ];then
+    echo "Please check %v is exist and executable"
+    exit 5
+fi
+
+start() {
+    [ -x $exec ] || exit 5
+    if [ "$pre_s" != "" ];then
+        . $pre_s $srv_n
+    fi
+    #umask 077
+        echo -n "Starting $srv_n server: "
+        daemonize -v -a -o /var/log/$srv_n/out.log -e /var/log/$srv_n/err.log -c $srv_h -p $pid_f -u $usr_n -l $lck_f $exec $arg_l
+        RETVAL=$?
+    echo
+        [ $RETVAL -eq 0 ] && touch $lck_f
+    return $RETVAL
+}
+stop() {
+        echo -n "Shutting down $srv_n server: "
+        killproc -p "$pid_f" $exec
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && rm -f $lck_f
+        return $RETVAL
+}
+restart() {
+        stop
+        start
+}
+
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart)
+        restart
+        ;;
+esac
+
+exit $?
