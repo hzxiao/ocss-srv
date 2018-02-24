@@ -9,7 +9,7 @@ before_install:
 addons:
   ssh_known_hosts: 111.230.242.177
 
-script: go test ./..
+script: go test -v ./...
   
 after_success:
   - ssh jks@111.230.242.177 'cd $GOPATH/src/github.com/hzxiao/ocss-srv && sudo chmod +x ./publish.sh && ./publish.sh'
