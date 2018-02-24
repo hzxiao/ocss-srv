@@ -2,8 +2,7 @@ language: go
 go:
   - "1.9"
 before_install:
-  - openssl aes-256-cbc -K $encrypted_73c0eb2351cf_key -iv $encrypted_73c0eb2351cf_iv -pass "pass:abc123"
-    -in travis.enc -out ~/.ssh/id_rsa -d
+  - openssl aes-256-cbc -K $encrypted_73c0eb2351cf_key -iv $encrypted_73c0eb2351cf_iv -in travis.enc -out ~/.ssh/id_rsa -d
   - chmod 600 ~/.ssh/id_rsa
   - echo -e "Host 111.230.242.177\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
 addons:
@@ -12,6 +11,7 @@ addons:
 script: go test -v ./...
   
 after_success:
-  - eval "$(ssh-agent)"
+  - eval "$(ssh-agent -s)"
   - ssh-add ~/.ssh/id_rsa
+  - chmod 600 ~/.ssh/id_rsa
   - ssh jks@111.230.242.177 'cd $GOPATH/src/github.com/hzxiao/ocss-srv && sudo chmod +x ./publish.sh && ./publish.sh'
