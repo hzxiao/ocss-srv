@@ -10,9 +10,7 @@ git pull
 sudo chmod +x ./pkg.sh
 ./pkg.sh
 
-cp build/$proj_name'.zip' $app_path
-cd $app_path
+cp -r build/$proj_name $app_path/
 
-unzip $proj_name'.zip'
-
-sudo /etc/rc.d/init.d/$proj_name'd' restart
+cd /etc/rc.d/init.d/
+sudo ./$proj_name'd' restart

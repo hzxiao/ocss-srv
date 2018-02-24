@@ -7,15 +7,23 @@ import (
 	"github.com/hzxiao/ocss-srv/db"
 	"github.com/iris-contrib/middleware/cors"
 	"github.com/kataras/iris"
+	"runtime"
 )
 
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	var err error
 	//config
-	config.InitConfig("config", "./config")
+	err = config.InitConfig("config", "./config")
+	if err != nil {
+		panic(err)
+	}
 	config.PrintAll()
 	//db
-	db.InitDB(config.GetString("db.conn"), config.GetString("db.name"))
-
+	err = db.InitDB(config.GetString("db.conn"), config.GetString("db.name"))
+	if err != nil {
+		panic(err)
+	}
 	//api
 	app := iris.New()
 	app.WrapRouter(cors.WrapNext(cors.Options{
