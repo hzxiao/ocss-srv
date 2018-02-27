@@ -1,5 +1,6 @@
 [server]
 port = ":8999"
+secret = "ocss"
 
 [db]
 conn = "ocss.h:27017"

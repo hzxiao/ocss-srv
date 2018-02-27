@@ -1,41 +1,55 @@
 package api
 
 import (
+	"github.com/dgrijalva/jwt-go"
+	jwtmiddleware "github.com/iris-contrib/middleware/jwt"
 	"github.com/kataras/iris"
 )
 
+var SrvAddr string
+
 func RegisterHandle(app *iris.Application) {
+
+	//common
+	app.Post("/login", Login)
 	//user
-	app.Post("users", AddUser)
+	userRouter := app.Party("/users")
+	UseJwt(userRouter)
+
+	userRouter.Post("/", AddUser)
+
 }
 
-type Result struct {
-	Code int         `json:"code"`
-	Data interface{} `json:"data"`
-	Msg  string      `json:"msg"`
-	Err  string      `json:"err"`
-}
-
-func ResultSuccess(ctx iris.Context, data interface{}) {
-	ctx.JSON(&Result{
-		Code: 0,
-		Data: data,
+func UseJwt(partys ...iris.Party) {
+	JwtMiddleware := jwtmiddleware.New(jwtmiddleware.Config{
+		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
+			return []byte("ocss"), nil
+		},
+		SigningMethod: jwt.SigningMethodHS256,
 	})
+	for i := range partys {
+		partys[i].Use(JwtMiddleware.Serve)
+		partys[i].Use(func(ctx iris.Context) {
+			userToken := JwtMiddleware.Get(ctx)
+			if claims, ok := userToken.Claims.(jwt.MapClaims); ok && userToken.Valid {
+				ctx.Values().Set("uid", claims["uid"])
+				ctx.Values().Set("uid", claims["role"])
+				ctx.Next()
+			} else {
+				ctx.StatusCode(iris.StatusUnauthorized)
+			}
+		})
+	}
 }
 
-func ResultErrByKey(ctx iris.Context, code int, key string, err error) {
-	//get target value by key
-	ctx.JSON(&Result{
-		Code: code,
-		Msg:  key,
-		Err:  err.Error(),
+func NewToken(uid string, role int) string {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"uid":  uid,
+		"role": role,
 	})
-}
 
-func ResultErrByMsg(ctx iris.Context, code int, msg string, err error) {
-	ctx.JSON(&Result{
-		Code: code,
-		Msg:  msg,
-		Err:  err.Error(),
-	})
+	// Sign and get the complete encoded token as a string using the secret
+	tokenString, _ := token.SignedString([]byte("ocss"))
+
+	return tokenString
 }

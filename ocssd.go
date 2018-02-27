@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/hzxiao/goutil/util"
+	"github.com/hzxiao/goutil"
 	"github.com/hzxiao/ocss-srv/api"
 	"github.com/hzxiao/ocss-srv/config"
 	"github.com/hzxiao/ocss-srv/db"
@@ -26,17 +26,21 @@ func main() {
 	}
 	//api
 	app := iris.New()
-	app.WrapRouter(cors.WrapNext(cors.Options{
-		AllowedOrigins:   []string{"*"},
-		AllowCredentials: true,
-	}))
+	Cors(app)
 
 	api.RegisterHandle(app)
 	app.Get("/demo", func(ctx iris.Context) {
-		res := util.Map{
+		res := goutil.Map{
 			"key": "value",
 		}
 		ctx.JSON(res)
 	})
 	app.Run(iris.Addr(config.GetString("server.port")), iris.WithCharset("UTF-8"))
+}
+
+func Cors(app *iris.Application) {
+	app.WrapRouter(cors.WrapNext(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowCredentials: true,
+	}))
 }

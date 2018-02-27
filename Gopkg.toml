@@ -25,9 +25,9 @@
 #   unused-packages = true
 
 
-[[constraint]]
-  branch = "master"
-  name = "github.com/hzxiao/goutil"
+#[[constraint]]
+#  branch = "master"
+#  name = "github.com/hzxiao/goutil"
 
 [[constraint]]
   name = "github.com/iris-contrib/middleware"
@@ -52,3 +52,7 @@
 [prune]
   go-tests = true
   unused-packages = true
+
+[[constraint]]
+  name = "github.com/sirupsen/logrus"
+  version = "1.0.4"

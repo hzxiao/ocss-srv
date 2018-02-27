@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"github.com/hzxiao/goutil/util"
+	"github.com/hzxiao/goutil"
 	"github.com/spf13/viper"
 )
 
@@ -26,7 +26,7 @@ func PrintAll() {
 	fmt.Println("--------config----------")
 	for k, v := range allConfigMap {
 		fmt.Printf("[%v]\n", k)
-		one := util.MapV(v)
+		one := goutil.MapV(v)
 		for kk, vv := range one {
 			fmt.Printf("%v = %v \n", kk, vv)
 		}

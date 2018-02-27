@@ -1,22 +1,91 @@
 package api
 
 import (
-	"github.com/hzxiao/goutil/util"
+	"bytes"
+	"fmt"
+	"github.com/hzxiao/goutil"
 	"github.com/hzxiao/ocss-srv/db"
+	"github.com/hzxiao/ocss-srv/tools"
+	"github.com/juju/errors"
 	"github.com/kataras/iris"
-	"log"
+	log "github.com/sirupsen/logrus"
 )
 
-func AddUser(ctx iris.Context) {
-	user := &db.User{Username: "aaa"}
-	err := db.AddUser(user)
+func Login(ctx iris.Context) {
+	var info goutil.Map
+	err := ctx.ReadJSON(&info)
 	if err != nil {
-		log.Printf("[AddUser] add user(%v) error(%v)", util.Struct2Json(user), err)
-		ResultErrByKey(ctx, 3, "srv-err", err)
+		WriteResultWithArgErr(ctx, err)
 		return
 	}
 
-	ResultSuccess(ctx, util.Map{
+	user, err := db.VerifyUser(info.GetString("username"), info.GetString("password"))
+	if err != nil {
+		log.Error("[Login] ", err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+	if user == nil {
+		WriteResultErrByMsg(ctx, CodeUserNotFound, "用户名不存在或密码错误", nil)
+		return
+	}
+	switch user.Status {
+	case db.UserStatsForbid:
+		WriteResultErrByMsg(ctx, CodeForbid, "禁止登录", nil)
+	case db.UserStatsDelete:
+		WriteResultErrByMsg(ctx, CodeDeleted, "无效的用户", nil)
+	default:
+		userMap := goutil.Struct2Map(user)
+		userMap.Set("token", NewToken(user.Username, user.Role))
+		WriteResultSuccess(ctx, goutil.Map{"user": userMap})
+	}
+}
+
+func CallLogin(info goutil.Map) (goutil.Map, error) {
+	result, err := tools.HttpPost(fmt.Sprintf("http://%v/login", SrvAddr), "",
+		"application/json", bytes.NewBufferString(goutil.Struct2Json(info)))
+	if err != nil {
+		return result, err
+	}
+
+	if result.GetInt64("code") == 0 {
+		return result.GetMap("data"), nil
+	}
+
+	return result, errors.New(result.GetString("msg") + " " + result.GetString("err"))
+}
+
+func AddUser(ctx iris.Context) {
+	var user db.User
+	err := ctx.ReadJSON(&user)
+	if err != nil {
+		WriteResultWithArgErr(ctx, err)
+		return
+	}
+
+	err = db.AddUser(&user)
+	if err != nil {
+		log.Printf("[AddUser] add user(%v) error(%v)", goutil.Struct2Json(user), err)
+		WriteResultErrByKey(ctx, 3, "srv-err", err)
+		return
+	}
+
+	user.Password = ""
+	WriteResultSuccess(ctx, goutil.Map{
 		"user": user,
 	})
+}
+
+func CallAddUser(token string, user *db.User) (goutil.Map, error) {
+	result, err := tools.HttpPost(fmt.Sprintf("http://%v/users", SrvAddr), token,
+		"application/json", bytes.NewBufferString(goutil.Struct2Json(user)))
+	if err != nil {
+		return result, err
+	}
+
+	if result.GetInt64("code") == 0 {
+		return result.GetMap("data"), nil
+	}
+
+	return result, errors.New(result.GetString("msg") + " " + result.GetString("err"))
 }

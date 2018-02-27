@@ -24,3 +24,7 @@ func TestDB(t *testing.T) {
 	err = C("test").FindId("1").One(&res)
 	assert.NoError(t, err)
 }
+
+func removeAll() {
+	C(CollectionUser).RemoveAll(nil)
+}

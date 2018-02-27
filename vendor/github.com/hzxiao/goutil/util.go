@@ -1,4 +1,4 @@
-package util
+package goutil
 
 import (
 	"encoding/json"
@@ -249,23 +249,16 @@ func Float64ArrayV(v interface{}) []float64 {
 }
 
 func Struct2Map(s interface{}) Map {
-	t := reflect.TypeOf(s)
-	v := reflect.ValueOf(s)
-
-	if t.Kind() == reflect.Ptr {
-		t = t.Elem()
-		v = v.Elem()
-	}
-
-	if t.Kind() != reflect.Struct {
+	bys, err := json.Marshal(s)
+	if err != nil {
 		return nil
 	}
-	var data = Map{}
-	for i := 0; i < t.NumField(); i++ {
-		data[t.Field(i).Name] = v.Field(i).Interface()
+	res := Map{}
+	err = json.Unmarshal(bys, &res)
+	if err != nil {
+		return nil
 	}
-
-	return data
+	return res
 }
 
 func Struct2Json(s interface{}) string {
