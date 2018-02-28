@@ -10,7 +10,9 @@ git pull
 sudo chmod +x ./pkg.sh
 ./pkg.sh
 
+sudo ./$proj_name'd' stop
+
 cp -r build/$proj_name $app_path/
 
 cd /etc/rc.d/init.d/
-sudo ./$proj_name'd' restart
+sudo ./$proj_name'd' start
