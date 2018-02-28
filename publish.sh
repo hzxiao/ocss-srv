@@ -12,6 +12,8 @@ sudo chmod +x ./pkg.sh
 
 sudo ./$proj_name'd' stop
 
+rm -rf $app_path/$proj_name
+
 cp -r build/$proj_name $app_path/
 
 cd /etc/rc.d/init.d/
