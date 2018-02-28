@@ -25,6 +25,17 @@
   revision = "72acac2207479d21dd45898c2a4264246c818148"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/betacraft/yaag"
+  packages = [
+    "irisyaag",
+    "middleware",
+    "yaag",
+    "yaag/models"
+  ]
+  revision = "67962f4b77581a1ab1e3492ff26add2c20d29def"
+
+[[projects]]
   name = "github.com/dgrijalva/jwt-go"
   packages = ["."]
   revision = "dbeaa9332f19a944acb5736b4456cfcc02140e29"
@@ -376,6 +387,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "551ccd359723538826482a9bb8763a1ac6887881f3fdc147dae9be6a2664fcf6"
+  inputs-digest = "46004555c538f60c6dc898b88eef406f8e4225a3c70bf7ee4ddfde555e713e2f"
   solver-name = "gps-cdcl"
   solver-version = 1

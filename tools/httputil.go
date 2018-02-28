@@ -11,22 +11,32 @@ import (
 var httpClient http.Client
 
 func HttpGet(url, token string) (goutil.Map, error) {
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Authorization", BearerToken(token))
-
-	return doRequest(req)
+	return httpRequest("GET", url, "", token, nil)
 }
 
 func HttpPost(url, token, ctype string, reader io.Reader) (goutil.Map, error) {
-	req, err := http.NewRequest("POST", url, reader)
+	return httpRequest("POST", url, ctype, token, reader)
+}
+
+func HttpPut(url, token, ctype string, reader io.Reader) (goutil.Map, error) {
+	return httpRequest("PUT", url, ctype, token, reader)
+}
+
+func HttpDelete(url, token, ctype string, reader io.Reader) (goutil.Map, error) {
+	return httpRequest("DELETE", url, ctype, token, reader)
+}
+
+func httpRequest(method, url, ctype, token string, reader io.Reader) (goutil.Map, error) {
+	req, err := http.NewRequest(method, url, reader)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", BearerToken(token))
-	req.Header.Set("Content-Type", ctype)
+	if token != "" {
+		req.Header.Set("Authorization", BearerToken(token))
+	}
+	if ctype != "" {
+		req.Header.Set("Content-Type", ctype)
+	}
 
 	return doRequest(req)
 }

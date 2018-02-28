@@ -80,7 +80,10 @@ func UpdateUser(user *User) error {
 		return nil
 	}
 	args["update"] = tools.NowMillisecond()
-	err := C(CollectionUser).UpdateId(user.Username, bson.M{"$set": args})
+	_, err := C(CollectionUser).FindId(user.Username).Apply(mgo.Change{
+		Update:    bson.M{"$set": args},
+		ReturnNew: true,
+	}, user)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"username": user.Username,
@@ -108,4 +111,11 @@ func VerifyUser(username, password string) (*User, error) {
 	}
 	user.Password = ""
 	return &user, nil
+}
+
+//FindUserByUsername find user by username
+func FindUserByUsername(username string) (*User, error) {
+	var user User
+	err := C(CollectionUser).FindId(username).One(&user)
+	return &user, err
 }

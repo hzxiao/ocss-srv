@@ -89,3 +89,69 @@ func CallAddUser(token string, user *db.User) (goutil.Map, error) {
 
 	return result, errors.New(result.GetString("msg") + " " + result.GetString("err"))
 }
+
+func UpdateUser(ctx iris.Context) {
+	username := ctx.Params().Get("username")
+	var user db.User
+	err := ctx.ReadJSON(&user)
+	if err != nil {
+		WriteResultWithArgErr(ctx, err)
+		return
+	}
+
+	user.Username = username
+	err = db.UpdateUser(&user)
+	if err != nil {
+		log.Printf("[UpdateUser] add user(%v) error(%v)", goutil.Struct2Json(user), err)
+		WriteResultErrByKey(ctx, 3, "srv-err", err)
+		return
+	}
+
+	user.Password = ""
+	WriteResultSuccess(ctx, goutil.Map{
+		"user": user,
+	})
+}
+
+func CallUpdateUser(token string, username string, user *db.User) (goutil.Map, error) {
+	result, err := tools.HttpPut(fmt.Sprintf("http://%v/users/%v", SrvAddr, username), token,
+		"application/json", bytes.NewBufferString(goutil.Struct2Json(user)))
+	if err != nil {
+		return result, err
+	}
+
+	if result.GetInt64("code") == 0 {
+		return result.GetMap("data"), nil
+	}
+
+	return result, errors.New(result.GetString("msg") + " " + result.GetString("err"))
+}
+
+func GetUser(ctx iris.Context) {
+	username := ctx.Params().Get("username")
+	log.Println(username)
+	user, err := db.FindUserByUsername(username)
+	if err == nil {
+		user.Password = ""
+		WriteResultSuccess(ctx, goutil.Map{"user": user})
+		return
+	}
+	if err == db.ErrNotFound {
+		WriteResultErrByMsg(ctx, CodeUserNotFound, "用户名不存在", nil)
+	} else {
+		WriteResultErrByKey(ctx, 3, "srv-err", err)
+	}
+}
+
+func CallGetUser(token string, username string) (goutil.Map, error) {
+	result, err := tools.HttpGet(fmt.Sprintf("http://%v/users/%v", SrvAddr, username), token)
+	if err != nil {
+		return result, err
+	}
+
+	if result.GetInt64("code") == 0 {
+		return result.GetMap("data"), nil
+	}
+
+	return result, errors.New(result.GetString("msg") + " " + result.GetString("err"))
+}

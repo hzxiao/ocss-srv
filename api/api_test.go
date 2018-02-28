@@ -5,6 +5,8 @@ import (
 	"github.com/hzxiao/ocss-srv/db"
 	"github.com/hzxiao/ocss-srv/tools"
 	"github.com/kataras/iris"
+	"github.com/betacraft/yaag/yaag"
+	"github.com/betacraft/yaag/irisyaag"
 )
 
 var testApp *iris.Application
@@ -16,6 +18,14 @@ func init() {
 	}
 	SrvAddr = "127.0.0.1:9123"
 	testApp = iris.New()
+	yaag.Init(&yaag.Config{ // <- IMPORTANT, init the middleware.
+		On:       true,
+		DocTitle: "Iris",
+		DocPath:  "apidoc.html",
+		BaseUrls: map[string]string{"Production": "127.0.0.1:8999", "Staging": ""},
+	})
+	testApp.Use(irisyaag.New()) // <- IMPORTANT, register the middleware.
+
 	RegisterHandle(testApp)
 
 	go func() {

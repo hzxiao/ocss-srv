@@ -8,6 +8,8 @@ import (
 	"github.com/iris-contrib/middleware/cors"
 	"github.com/kataras/iris"
 	"runtime"
+	"github.com/betacraft/yaag/yaag"
+	"github.com/betacraft/yaag/irisyaag"
 )
 
 func main() {
@@ -26,15 +28,29 @@ func main() {
 	}
 	//api
 	app := iris.New()
+
+
+	yaag.Init(&yaag.Config{ // <- IMPORTANT, init the middleware.
+		On:       true,
+		DocTitle: "Iris",
+		DocPath:  "apidoc.html",
+		BaseUrls: map[string]string{"Production": "127.0.0.1:8999", "Staging": ""},
+	})
+	app.Use(irisyaag.New()) // <- IMPORTANT, register the middleware.
+
 	Cors(app)
 
 	api.RegisterHandle(app)
+
 	app.Get("/demo", func(ctx iris.Context) {
 		res := goutil.Map{
 			"key": "value",
 		}
 		ctx.JSON(res)
+		//ctx.ResponseWriter().Header().Set("access-control-allow-origin", "*")
 	})
+
+	app.StaticWeb("/", ".")
 	app.Run(iris.Addr(config.GetString("server.port")), iris.WithCharset("UTF-8"))
 }
 

@@ -17,7 +17,8 @@ func RegisterHandle(app *iris.Application) {
 	UseJwt(userRouter)
 
 	userRouter.Post("/", AddUser)
-
+	userRouter.Put("/{username:string}", UpdateUser)
+	userRouter.Get("/{username:string}", GetUser)
 }
 
 func UseJwt(partys ...iris.Party) {

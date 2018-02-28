@@ -67,6 +67,18 @@ func TestUpdateUser(t *testing.T) {
 	assert.Equal(t, u.Status, verifyUser.Status)
 	assert.Equal(t, u.Role, verifyUser.Role)
 	assert.Equal(t, u.Icon, verifyUser.Icon)
+
+	//test user not exists
+	u1 := &User{
+		Username: "uu",
+		Status:   UserStatsNormal,
+		Role:     RoleTeacher,
+		Icon:     "icon",
+		Password: "654321",
+	}
+
+	err = UpdateUser(u1)
+	assert.Error(t, err)
 }
 
 func TestVerifyUser(t *testing.T) {
