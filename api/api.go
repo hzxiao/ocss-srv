@@ -2,7 +2,9 @@ package api
 
 import (
 	"github.com/dgrijalva/jwt-go"
+	"github.com/hzxiao/goutil"
 	jwtmiddleware "github.com/iris-contrib/middleware/jwt"
+	"github.com/juju/errors"
 	"github.com/kataras/iris"
 )
 
@@ -53,4 +55,12 @@ func NewToken(uid string, role int) string {
 	tokenString, _ := token.SignedString([]byte("ocss"))
 
 	return tokenString
+}
+
+func handleACallResult(result goutil.Map) (goutil.Map, error) {
+	if result.GetInt64("code") == 0 {
+		return result.GetMap("data"), nil
+	}
+
+	return result, errors.New(result.GetString("msg") + " " + result.GetString("err"))
 }

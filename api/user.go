@@ -83,11 +83,7 @@ func CallAddUser(token string, user *db.User) (goutil.Map, error) {
 		return result, err
 	}
 
-	if result.GetInt64("code") == 0 {
-		return result.GetMap("data"), nil
-	}
-
-	return result, errors.New(result.GetString("msg") + " " + result.GetString("err"))
+	return handleACallResult(result)
 }
 
 func UpdateUser(ctx iris.Context) {
@@ -119,12 +115,7 @@ func CallUpdateUser(token string, username string, user *db.User) (goutil.Map, e
 	if err != nil {
 		return result, err
 	}
-
-	if result.GetInt64("code") == 0 {
-		return result.GetMap("data"), nil
-	}
-
-	return result, errors.New(result.GetString("msg") + " " + result.GetString("err"))
+	return handleACallResult(result)
 }
 
 func GetUser(ctx iris.Context) {
@@ -149,9 +140,5 @@ func CallGetUser(token string, username string) (goutil.Map, error) {
 		return result, err
 	}
 
-	if result.GetInt64("code") == 0 {
-		return result.GetMap("data"), nil
-	}
-
-	return result, errors.New(result.GetString("msg") + " " + result.GetString("err"))
+	return handleACallResult(result)
 }
