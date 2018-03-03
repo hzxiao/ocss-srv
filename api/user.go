@@ -48,11 +48,7 @@ func CallLogin(info goutil.Map) (goutil.Map, error) {
 		return result, err
 	}
 
-	if result.GetInt64("code") == 0 {
-		return result.GetMap("data"), nil
-	}
-
-	return result, errors.New(result.GetString("msg") + " " + result.GetString("err"))
+	return handleACallResult(result)
 }
 
 func AddUser(ctx iris.Context) {
