@@ -27,7 +27,8 @@ echo "Build ocss-srv normal executor..."
 go build -o $o_srv/$n_srv github.com/hzxiao/ocss-srv/
 
 #cp $d_srv $o_srv
-cp config/config.toml $o_srv/config
+cp config/*.toml $o_srv/config
+cp data/* $o_srv/data
 # cp zh.json $o_srv/confing
 
 ###

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"github.com/hzxiao/ocss-srv/config"
 	"github.com/juju/errors"
 	"gopkg.in/mgo.v2"
 	"log"
@@ -18,6 +19,17 @@ func InitDB(url string, dbName string) error {
 	}
 
 	C = sess.DB(dbName).C
+
+	//init data
+	err = InitDept(config.GetString("data.deptPath"))
+	if err != nil {
+		panic(err)
+	}
+	err = InitMajor(config.GetString("data.majorPath"))
+	if err != nil {
+		panic(err)
+	}
+
 	go PingLoop(sess, url, dbName)
 
 	return nil

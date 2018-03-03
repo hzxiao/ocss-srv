@@ -1,0 +1,11 @@
+[server]
+port = ":8999"
+secret = "ocss"
+
+[db]
+conn = "111.230.242.177:27017"
+name = "ocss_test"
+
+[data]
+deptPath = "../data/dept.json"
+majorPath = "../data/major.json"

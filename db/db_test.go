@@ -2,11 +2,17 @@ package db
 
 import (
 	"github.com/hzxiao/goutil/assert"
+	"github.com/hzxiao/ocss-srv/config"
 	"testing"
 )
 
 func init() {
-	err := InitDB("111.230.242.177:27017", "ocss_test")
+	var err error
+	err = config.InitConfig("config-test", "../config")
+	if err != nil {
+		panic(err)
+	}
+	err = InitDB("111.230.242.177:27017", "ocss_test")
 	if err != nil {
 		panic(err)
 	}

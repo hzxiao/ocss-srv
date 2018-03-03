@@ -5,3 +5,7 @@ secret = "ocss"
 [db]
 conn = "ocss.h:27017"
 name = "ocss"
+
+[data]
+deptPath = "data/dept.json"
+majorPath = "data/major.json"

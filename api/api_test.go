@@ -4,6 +4,7 @@ import (
 	"github.com/betacraft/yaag/irisyaag"
 	"github.com/betacraft/yaag/yaag"
 	"github.com/hzxiao/goutil"
+	"github.com/hzxiao/ocss-srv/config"
 	"github.com/hzxiao/ocss-srv/db"
 	"github.com/hzxiao/ocss-srv/tools"
 	"github.com/kataras/iris"
@@ -12,7 +13,12 @@ import (
 var testApp *iris.Application
 
 func init() {
-	err := db.InitDB("111.230.242.177:27017", "ocss_test")
+	var err error
+	err = config.InitConfig("config-test", "../config")
+	if err != nil {
+		panic(err)
+	}
+	err = db.InitDB("111.230.242.177:27017", "ocss_test")
 	if err != nil {
 		panic(err)
 	}
