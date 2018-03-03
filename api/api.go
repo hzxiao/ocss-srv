@@ -44,7 +44,7 @@ func UseJwt(partys ...router.Party) {
 			userToken := JwtMiddleware.Get(ctx)
 			if claims, ok := userToken.Claims.(jwt.MapClaims); ok && userToken.Valid {
 				ctx.Values().Set("uid", claims["uid"])
-				ctx.Values().Set("uid", claims["role"])
+				ctx.Values().Set("role", claims["role"])
 				ctx.Next()
 			} else {
 				ctx.StatusCode(iris.StatusUnauthorized)
