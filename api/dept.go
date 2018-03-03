@@ -1,17 +1,17 @@
 package api
 
 import (
-	"github.com/kataras/iris/context"
-	"github.com/hzxiao/ocss-srv/db"
-	"github.com/hzxiao/goutil"
 	"fmt"
+	"github.com/hzxiao/goutil"
+	"github.com/hzxiao/ocss-srv/db"
 	"github.com/hzxiao/ocss-srv/tools"
+	"github.com/kataras/iris/context"
 )
 
 func GetAllDept(ctx context.Context) {
 	deptList, err := db.FindAllDept()
 	if err != nil {
-		WriteResultWithSrvErr(ctx,err)
+		WriteResultWithSrvErr(ctx, err)
 		return
 	}
 
@@ -32,7 +32,7 @@ func CallGetAllDept() (goutil.Map, error) {
 func GetAllMajor(ctx context.Context) {
 	majorList, err := db.FindAllMajor()
 	if err != nil {
-		WriteResultWithSrvErr(ctx,err)
+		WriteResultWithSrvErr(ctx, err)
 		return
 	}
 

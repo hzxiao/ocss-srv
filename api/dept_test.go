@@ -1,8 +1,8 @@
 package api
 
 import (
-	"testing"
 	"github.com/hzxiao/goutil/assert"
+	"testing"
 )
 
 func TestGetAllDept(t *testing.T) {
