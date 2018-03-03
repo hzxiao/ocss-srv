@@ -1,12 +1,12 @@
 package api
 
 import (
+	"github.com/betacraft/yaag/irisyaag"
+	"github.com/betacraft/yaag/yaag"
 	"github.com/hzxiao/goutil"
 	"github.com/hzxiao/ocss-srv/db"
 	"github.com/hzxiao/ocss-srv/tools"
 	"github.com/kataras/iris"
-	"github.com/betacraft/yaag/yaag"
-	"github.com/betacraft/yaag/irisyaag"
 )
 
 var testApp *iris.Application

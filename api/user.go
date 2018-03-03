@@ -6,12 +6,11 @@ import (
 	"github.com/hzxiao/goutil"
 	"github.com/hzxiao/ocss-srv/db"
 	"github.com/hzxiao/ocss-srv/tools"
-	"github.com/juju/errors"
-	"github.com/kataras/iris"
+	"github.com/kataras/iris/context"
 	log "github.com/sirupsen/logrus"
 )
 
-func Login(ctx iris.Context) {
+func Login(ctx context.Context) {
 	var info goutil.Map
 	err := ctx.ReadJSON(&info)
 	if err != nil {
@@ -51,7 +50,7 @@ func CallLogin(info goutil.Map) (goutil.Map, error) {
 	return handleACallResult(result)
 }
 
-func AddUser(ctx iris.Context) {
+func AddUser(ctx context.Context) {
 	var user db.User
 	err := ctx.ReadJSON(&user)
 	if err != nil {
@@ -82,7 +81,7 @@ func CallAddUser(token string, user *db.User) (goutil.Map, error) {
 	return handleACallResult(result)
 }
 
-func UpdateUser(ctx iris.Context) {
+func UpdateUser(ctx context.Context) {
 	username := ctx.Params().Get("username")
 	var user db.User
 	err := ctx.ReadJSON(&user)
@@ -114,7 +113,7 @@ func CallUpdateUser(token string, username string, user *db.User) (goutil.Map, e
 	return handleACallResult(result)
 }
 
-func GetUser(ctx iris.Context) {
+func GetUser(ctx context.Context) {
 	username := ctx.Params().Get("username")
 	log.Println(username)
 	user, err := db.FindUserByUsername(username)

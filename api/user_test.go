@@ -47,8 +47,8 @@ func TestUpdateUser(t *testing.T) {
 	assert.NoError(t, err)
 
 	u := &db.User{
-		Username:username,
-		Icon: "cc",
+		Username: username,
+		Icon:     "cc",
 	}
 	res, err := CallUpdateUser(token, username, u)
 	assert.NoError(t, err)

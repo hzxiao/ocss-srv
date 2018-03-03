@@ -25,7 +25,9 @@ func InitDB(url string, dbName string) error {
 
 //db collection name
 const (
-	CollectionUser = "user"
+	CollectionUser  = "user"
+	CollectionDept  = "dept"
+	CollectionMajor = "major"
 )
 
 func PingLoop(sess *mgo.Session, url, dbName string) {

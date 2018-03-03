@@ -1,6 +1,6 @@
 package api
 
-import "github.com/kataras/iris"
+import "github.com/kataras/iris/context"
 
 type Result struct {
 	Code int         `json:"code"`
@@ -9,7 +9,7 @@ type Result struct {
 	Err  string      `json:"err"`
 }
 
-func WriteResultSuccess(ctx iris.Context, data interface{}) {
+func WriteResultSuccess(ctx context.Context, data interface{}) {
 	ctx.JSON(&Result{
 		Code: CodeSuccess,
 		Data: data,
@@ -17,7 +17,7 @@ func WriteResultSuccess(ctx iris.Context, data interface{}) {
 	ctx.StopExecution()
 }
 
-func WriteResultErrByKey(ctx iris.Context, code int, key string, err error) {
+func WriteResultErrByKey(ctx context.Context, code int, key string, err error) {
 	//get target value by key
 	result := &Result{
 		Code: code,
@@ -29,7 +29,7 @@ func WriteResultErrByKey(ctx iris.Context, code int, key string, err error) {
 	writeResult(ctx, result)
 }
 
-func WriteResultErrByMsg(ctx iris.Context, code int, msg string, err error) {
+func WriteResultErrByMsg(ctx context.Context, code int, msg string, err error) {
 	result := &Result{
 		Code: code,
 		Msg:  msg,
@@ -40,7 +40,7 @@ func WriteResultErrByMsg(ctx iris.Context, code int, msg string, err error) {
 	writeResult(ctx, result)
 }
 
-func WriteResultWithArgErr(ctx iris.Context, err error) {
+func WriteResultWithArgErr(ctx context.Context, err error) {
 	result := &Result{
 		Code: CodeArgErr,
 		Msg:  "参数错误",
@@ -51,7 +51,7 @@ func WriteResultWithArgErr(ctx iris.Context, err error) {
 	writeResult(ctx, result)
 }
 
-func WriteResultWithSrvErr(ctx iris.Context, err error) {
+func WriteResultWithSrvErr(ctx context.Context, err error) {
 	result := &Result{
 		Code: CodeSrvErr,
 		Msg:  "服务器错误",
@@ -62,7 +62,7 @@ func WriteResultWithSrvErr(ctx iris.Context, err error) {
 	writeResult(ctx, result)
 }
 
-func writeResult(ctx iris.Context, result *Result) {
+func writeResult(ctx context.Context, result *Result) {
 	ctx.JSON(result)
 	ctx.StopExecution()
 }

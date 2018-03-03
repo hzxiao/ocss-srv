@@ -1,15 +1,16 @@
 package main
 
 import (
+	"github.com/betacraft/yaag/irisyaag"
+	"github.com/betacraft/yaag/yaag"
 	"github.com/hzxiao/goutil"
 	"github.com/hzxiao/ocss-srv/api"
 	"github.com/hzxiao/ocss-srv/config"
 	"github.com/hzxiao/ocss-srv/db"
 	"github.com/iris-contrib/middleware/cors"
 	"github.com/kataras/iris"
+	"github.com/kataras/iris/context"
 	"runtime"
-	"github.com/betacraft/yaag/yaag"
-	"github.com/betacraft/yaag/irisyaag"
 )
 
 func main() {
@@ -29,7 +30,6 @@ func main() {
 	//api
 	app := iris.New()
 
-
 	yaag.Init(&yaag.Config{ // <- IMPORTANT, init the middleware.
 		On:       true,
 		DocTitle: "Iris",
@@ -42,7 +42,7 @@ func main() {
 
 	api.RegisterHandle(app)
 
-	app.Get("/demo", func(ctx iris.Context) {
+	app.Get("/demo", func(ctx context.Context) {
 		res := goutil.Map{
 			"key": "value",
 		}
