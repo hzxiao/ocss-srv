@@ -2,7 +2,6 @@ package db
 
 import (
 	"encoding/json"
-	"github.com/hzxiao/goutil"
 	"github.com/juju/errors"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
