@@ -6,6 +6,8 @@ import (
 	jwtmiddleware "github.com/iris-contrib/middleware/jwt"
 	"github.com/juju/errors"
 	"github.com/kataras/iris"
+	"github.com/kataras/iris/context"
+	"github.com/kataras/iris/core/router"
 )
 
 var SrvAddr string
@@ -29,7 +31,7 @@ func RegisterHandle(app *iris.Application) {
 	app.Get("/majors", GetAllMajor)
 }
 
-func UseJwt(partys ...iris.Party) {
+func UseJwt(partys ...router.Party) {
 	JwtMiddleware := jwtmiddleware.New(jwtmiddleware.Config{
 		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
 			return []byte("ocss"), nil
@@ -38,7 +40,7 @@ func UseJwt(partys ...iris.Party) {
 	})
 	for i := range partys {
 		partys[i].Use(JwtMiddleware.Serve)
-		partys[i].Use(func(ctx iris.Context) {
+		partys[i].Use(func(ctx context.Context) {
 			userToken := JwtMiddleware.Get(ctx)
 			if claims, ok := userToken.Claims.(jwt.MapClaims); ok && userToken.Valid {
 				ctx.Values().Set("uid", claims["uid"])
