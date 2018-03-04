@@ -8,6 +8,7 @@ import (
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/context"
 	"github.com/kataras/iris/core/router"
+	"strings"
 )
 
 var SrvAddr string
@@ -23,6 +24,15 @@ func RegisterHandle(app *iris.Application) {
 	userRouter.Post("/", AddUser)
 	userRouter.Put("/{username:string}", UpdateUser)
 	userRouter.Get("/{username:string}", GetUser)
+
+	stuRouter := app.Party("/students")
+	UseJwt(stuRouter)
+
+	stuRouter.Post("/", AddStudent)
+	stuRouter.Put("/{id:string}", UpdateStudent)
+	stuRouter.Delete("/", DeleteStudent)
+	stuRouter.Get("/", GetStudents)
+	stuRouter.Get("/{id:string}", GetStudent)
 
 	//depts
 	app.Get("/depts", GetAllDept)
@@ -71,4 +81,19 @@ func handleACallResult(result goutil.Map) (goutil.Map, error) {
 	}
 
 	return result, errors.New(result.GetString("msg") + " " + result.GetString("err"))
+}
+
+func appendArgs(url string, argMap goutil.Map) string {
+	var args []string
+	for k := range argMap {
+		args = append(args, k+"="+argMap.GetString(k))
+	}
+	if len(args) == 0 {
+		return url
+	}
+	if !strings.HasSuffix(url, "?") {
+		url = url + "?"
+	}
+	url = url + strings.Join(args, "&")
+	return url
 }

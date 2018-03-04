@@ -8,4 +8,5 @@ const (
 	CodeUserNotFound
 	CodeForbid
 	CodeDeleted
+	CodeAlreadyExists
 )
