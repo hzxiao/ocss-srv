@@ -6,6 +6,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"io/ioutil"
+	"github.com/hzxiao/ocss-srv/tools"
 )
 
 //InitDept int dept data
@@ -49,7 +50,7 @@ func FindAllDept() ([]*Dept, error) {
 
 func InitMajor(filename string) error {
 	var majorList []*Major
-	err := unmarshalJsonFile(filename, &majorList)
+	err := tools.UnmarshalJsonFile(filename, &majorList)
 	if err != nil {
 		return err
 	}
@@ -86,12 +87,4 @@ func FindAllMajor() ([]*Major, error) {
 	var majorList []*Major
 	err := C(CollectionMajor).Find(nil).All(&majorList)
 	return majorList, err
-}
-
-func unmarshalJsonFile(filename string, dest interface{}) error {
-	buf, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return nil
-	}
-	return json.Unmarshal(buf, &dest)
 }
