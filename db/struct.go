@@ -131,9 +131,15 @@ type CourseResource struct {
 	ID     string `bson:"_id" json:"id"`
 	TCID   string `bson:"tcid" json:"tcid"` //teach course id
 	TID    string `bson:"tid" json:"tid"`   //teacher id
-	Name   string `bson:"name" json:"name"`
 	Desc   string `bson:"desc" json:"desc"` //描述
-	Path   string `bson:"path" json:"path"`
-	Size   int    `bson:"size" json:"size"`
+	File   *File  `bson:"file" json:"file"`
 	Create int64  `bson:"create" json:"create"`
+}
+
+type File struct {
+	ID   string `bson:"_id" json:"id"`
+	Name string `bson:"name" json:"name"`
+	Size int64  `bson:"size" json:"size"`
+	Ext  string `bson:"ext" json:"ext"`
+	Url  string `bson:"url" json:"url"`
 }

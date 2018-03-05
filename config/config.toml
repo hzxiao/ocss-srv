@@ -9,3 +9,7 @@ name = "ocss"
 [data]
 deptPath = "data/dept.json"
 majorPath = "data/major.json"
+
+
+[file]
+location = "/home/jks/app/files"

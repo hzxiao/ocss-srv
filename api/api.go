@@ -17,6 +17,8 @@ func RegisterHandle(app *iris.Application) {
 
 	//common
 	app.Post("/login", Login)
+	app.Post("/files", UploadFile)
+	app.Get("/files/{id:string}", GetFile)
 	//user
 	userRouter := app.Party("/users")
 	UseJwt(userRouter)
@@ -61,6 +63,10 @@ func UseJwt(partys ...router.Party) {
 			}
 		})
 	}
+}
+
+func CheckPermission(ctx context.Context) {
+
 }
 
 func NewToken(uid string, role int) string {

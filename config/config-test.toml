@@ -9,3 +9,6 @@ name = "ocss_test"
 [data]
 deptPath = "../data/dept.json"
 majorPath = "../data/major.json"
+
+[file]
+location = "../test"

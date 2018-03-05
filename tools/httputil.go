@@ -14,19 +14,19 @@ func HttpGet(url, token string) (goutil.Map, error) {
 	return httpRequest("GET", url, "", token, nil)
 }
 
-func HttpPost(url, token, ctype string, reader io.Reader) (goutil.Map, error) {
-	return httpRequest("POST", url, ctype, token, reader)
+func HttpPost(url, token, cType string, reader io.Reader) (goutil.Map, error) {
+	return httpRequest("POST", url, cType, token, reader)
 }
 
-func HttpPut(url, token, ctype string, reader io.Reader) (goutil.Map, error) {
-	return httpRequest("PUT", url, ctype, token, reader)
+func HttpPut(url, token, cType string, reader io.Reader) (goutil.Map, error) {
+	return httpRequest("PUT", url, cType, token, reader)
 }
 
-func HttpDelete(url, token, ctype string, reader io.Reader) (goutil.Map, error) {
-	return httpRequest("DELETE", url, ctype, token, reader)
+func HttpDelete(url, token, cType string, reader io.Reader) (goutil.Map, error) {
+	return httpRequest("DELETE", url, cType, token, reader)
 }
 
-func httpRequest(method, url, ctype, token string, reader io.Reader) (goutil.Map, error) {
+func httpRequest(method, url, cType, token string, reader io.Reader) (goutil.Map, error) {
 	req, err := http.NewRequest(method, url, reader)
 	if err != nil {
 		return nil, err
@@ -34,8 +34,8 @@ func httpRequest(method, url, ctype, token string, reader io.Reader) (goutil.Map
 	if token != "" {
 		req.Header.Set("Authorization", BearerToken(token))
 	}
-	if ctype != "" {
-		req.Header.Set("Content-Type", ctype)
+	if cType != "" {
+		req.Header.Set("Content-Type", cType)
 	}
 
 	return doRequest(req)
