@@ -1,18 +1,16 @@
 package db
 
 import (
-	"encoding/json"
 	"github.com/juju/errors"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"io/ioutil"
 	"github.com/hzxiao/ocss-srv/tools"
 )
 
 //InitDept int dept data
 func InitDept(filename string) error {
 	var deptList []*Dept
-	err := unmarshalJsonFile(filename, &deptList)
+	err := tools.UnmarshalJsonFile(filename, &deptList)
 	if err != nil {
 		return err
 	}
