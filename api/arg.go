@@ -59,11 +59,24 @@ func CheckURLArg(formValue map[string][]string, args []*Arg) (goutil.Map, error)
 				return nil, errors.Errorf("invalid bool type of key(%v), value(%v)", arg.Key, v)
 			}
 		case "string":
-			argMap.Set(arg.Key, v)
+			if v != "" {
+				argMap.Set(arg.Key, v)
+			}
 		default:
 			return nil, errors.Errorf("unknown type(%v) of key(%v)", arg.Type, arg.Key)
 		}
 	}
 
 	return argMap, nil
+}
+
+func TakeByKeys(inMap goutil.Map, keys ...string) goutil.Map {
+	outMap := goutil.Map{}
+	for i := range keys {
+		v, ok := inMap[keys[i]]
+		if ok {
+			outMap.Set(keys[i], v)
+		}
+	}
+	return outMap
 }

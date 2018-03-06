@@ -41,6 +41,14 @@ func RegisterHandle(app *iris.Application) {
 
 	//majors
 	app.Get("/majors", GetAllMajor)
+
+	//resource
+	resRouter := app.Party("/resources")
+	UseJwt(resRouter)
+	resRouter.Post("/", AddCourseResource)
+	resRouter.Delete("/", DelCourseResource)
+	resRouter.Get("/", GetCourseResource)
+
 }
 
 func UseJwt(partys ...router.Party) {

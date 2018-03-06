@@ -133,7 +133,9 @@ type CourseResource struct {
 	TID    string `bson:"tid" json:"tid"`   //teacher id
 	Desc   string `bson:"desc" json:"desc"` //描述
 	File   *File  `bson:"file" json:"file"`
+	Status int    `bson:"status" json:"status"`
 	Create int64  `bson:"create" json:"create"`
+	Update int64  `bson:"update" json:"update"`
 }
 
 type File struct {

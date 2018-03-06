@@ -1,10 +1,10 @@
 package db
 
 import (
+	"github.com/hzxiao/ocss-srv/tools"
 	"github.com/juju/errors"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"github.com/hzxiao/ocss-srv/tools"
 )
 
 //InitDept int dept data

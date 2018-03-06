@@ -24,3 +24,9 @@ const (
 var (
 	ErrNotFound = errors.New("not found")
 )
+
+//
+const (
+	StatusNormal  = 1
+	StatusDeleted = 3
+)

@@ -13,7 +13,7 @@ func TestCallGetStudents(t *testing.T) {
 
 	res, err := CallGetStudents(token, goutil.Map{
 		"name": "xx",
-		"id":   "xx",
+		"id":   "",
 	})
 	assert.NoError(t, err)
 
