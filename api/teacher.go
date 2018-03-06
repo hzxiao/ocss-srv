@@ -11,17 +11,17 @@ import (
 	"strings"
 )
 
-func AddStudent(ctx context.Context) {
-	var stu db.Student
-	err := ctx.ReadJSON(&stu)
+func AddTeacher(ctx context.Context) {
+	var teacher db.Teacher
+	err := ctx.ReadJSON(&teacher)
 	if err != nil {
 		WriteResultWithArgErr(ctx, err)
 		return
 	}
 
-	err = db.AddStudent(&stu)
+	err = db.AddTeacher(&teacher)
 	if err != nil {
-		log.Errorf("[AddStudent] add stu(%v) error(%v)", goutil.Struct2Json(stu), err)
+		log.Errorf("[AddTeacher] add teacher(%v) error(%v)", goutil.Struct2Json(teacher), err)
 		if strings.Contains(err.Error(), "already exists") {
 			WriteResultErrByMsg(ctx, CodeAlreadyExists, "学号已存在", err)
 			return
@@ -31,33 +31,33 @@ func AddStudent(ctx context.Context) {
 	}
 
 	WriteResultSuccess(ctx, goutil.Map{
-		"student": stu,
+		"teacher": teacher,
 	})
 }
 
-func UpdateStudent(ctx context.Context) {
+func UpdateTeacher(ctx context.Context) {
 	id := ctx.Params().Get("id")
-	var stu db.Student
-	err := ctx.ReadJSON(&stu)
+	var teacher db.Teacher
+	err := ctx.ReadJSON(&teacher)
 	if err != nil {
 		WriteResultWithArgErr(ctx, err)
 		return
 	}
 
-	stu.ID = id
-	err = db.UpdateStudent(&stu)
+	teacher.ID = id
+	err = db.UpdateTeacher(&teacher)
 	if err != nil {
-		log.Errorf("[UpdateStudent] update stu(%v) error(%v)", goutil.Struct2Json(stu), err)
+		log.Errorf("[UpdateTeacher] update teacher(%v) error(%v)", goutil.Struct2Json(teacher), err)
 		WriteResultWithSrvErr(ctx, err)
 		return
 	}
 
 	WriteResultSuccess(ctx, goutil.Map{
-		"student": stu,
+		"teacher": teacher,
 	})
 }
 
-func DeleteStudent(ctx context.Context) {
+func DeleteTeacher(ctx context.Context) {
 	var ids []string
 	err := ctx.ReadJSON(&ids)
 	if err != nil {
@@ -65,9 +65,9 @@ func DeleteStudent(ctx context.Context) {
 		return
 	}
 
-	err = db.UpdateStudentByIDs(ids, goutil.Map{"status": db.UserStatsDelete})
+	err = db.UpdateTeacherByIDs(ids, goutil.Map{"status": db.UserStatsDelete})
 	if err != nil {
-		log.Errorf("[DeleteStudent] delete ids(%v) error(%v)", ids, err)
+		log.Errorf("[DeleteTeacher] delete ids(%v) error(%v)", ids, err)
 		WriteResultWithSrvErr(ctx, err)
 		return
 	}
@@ -77,11 +77,11 @@ func DeleteStudent(ctx context.Context) {
 	})
 }
 
-func GetStudent(ctx context.Context) {
+func GetTeacher(ctx context.Context) {
 	id := ctx.Params().Get("id")
-	stu, err := db.LoadStudent(id)
+	teacher, err := db.LoadTeacher(id)
 	if err != nil {
-		log.Errorf("[GetStudent] get stu(%v) error(%v)", id, err)
+		log.Errorf("[GetTeacher] get teacher(%v) error(%v)", id, err)
 		if err == db.ErrNotFound {
 			WriteResultErrByMsg(ctx, CodeUserNotFound, "学号不存在", err)
 			return
@@ -91,11 +91,11 @@ func GetStudent(ctx context.Context) {
 	}
 
 	WriteResultSuccess(ctx, goutil.Map{
-		"student": stu,
+		"teacher": teacher,
 	})
 }
 
-func GetStudents(ctx context.Context) {
+func GetTeachers(ctx context.Context) {
 	argMap, err := CheckURLArg(ctx.FormValues(), []*Arg{
 		{Key: "name", Type: "string"},
 		{Key: "id", Type: "string"},
@@ -131,20 +131,20 @@ func GetStudents(ctx context.Context) {
 	if argMap.Exist("sort") {
 		sort = append(sort, argMap.GetString("sort"))
 	}
-	studentList, total, err := db.ListStudent(exactCondMap, fuzzyCondMap, sort, skip, limit)
+	teacherList, total, err := db.ListTeacher(exactCondMap, fuzzyCondMap, sort, skip, limit)
 	if err != nil {
-		log.Errorf("[GetStudents] get stu by(%v) error(%v)", argMap, err)
+		log.Errorf("[GetTeachers] get teacher by(%v) error(%v)", argMap, err)
 		WriteResultWithSrvErr(ctx, err)
 		return
 	}
 	WriteResultSuccess(ctx, goutil.Map{
-		"studentList": studentList,
+		"teacherList": teacherList,
 		"total":       total,
 	})
 }
 
-func CallGetStudents(token string, argMap goutil.Map) (goutil.Map, error) {
-	url := fmt.Sprintf("http://%v/students?", SrvAddr)
+func CallGetTeachers(token string, argMap goutil.Map) (goutil.Map, error) {
+	url := fmt.Sprintf("http://%v/teachers?", SrvAddr)
 	result, err := tools.HttpGet(appendArgs(url, argMap), token)
 	if err != nil {
 		return result, err

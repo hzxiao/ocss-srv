@@ -36,6 +36,16 @@ func RegisterHandle(app *iris.Application) {
 	stuRouter.Get("/", GetStudents)
 	stuRouter.Get("/{id:string}", GetStudent)
 
+	//teachers
+	teacherRouter := app.Party("/teachers")
+	UseJwt(teacherRouter)
+	teacherRouter.Post("/", AddTeacher)
+	teacherRouter.Put("/{id:string}", UpdateTeacher)
+	teacherRouter.Delete("/", DeleteTeacher)
+	teacherRouter.Get("/", GetTeachers)
+	teacherRouter.Get("/{id:string}", GetTeacher)
+
+
 	//depts
 	app.Get("/depts", GetAllDept)
 

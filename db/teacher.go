@@ -91,3 +91,9 @@ func ListTeacher(exactCond, fuzzyCond goutil.Map, sort []string, skip, limit int
 func CountTeacher(cond goutil.Map) (int, error) {
 	return count(CollectionTeacher, tools.ToBsonMap(cond))
 }
+
+func LoadTeacher(id string) (*Teacher, error) {
+	var t Teacher
+	err := one(CollectionTeacher, bson.M{"_id": id}, nil, &t)
+	return &t, err
+}
