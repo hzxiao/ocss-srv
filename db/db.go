@@ -45,6 +45,7 @@ const (
 	CollectionCourse   = "course"
 	CollectionFile     = "file"
 	CollectionResource = "resource"
+	CollectionComment = "comment"
 )
 
 func PingLoop(sess *mgo.Session, url, dbName string) {

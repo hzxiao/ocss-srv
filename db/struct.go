@@ -145,3 +145,22 @@ type File struct {
 	Ext  string `bson:"ext" json:"ext"`
 	Url  string `bson:"url" json:"url"`
 }
+
+type Comment struct {
+	ID      string `bson:"_id" json:"id"`
+	TCID    string `bson:"tcid" json:"tcid"` //teach course id
+	UID     string `bson:"uid" json:"uid"`
+	Role    int    `bson:"role" json:"role"`
+	Content string `bson:"content" json:"content"`
+	Create  int64  `bson:"create" json:"create"`
+	Status  int    `bson:"status" json:"status"`
+	//{
+	//	"id": "xs",
+	//	"uid": "123",
+	//	"role": 1,
+	//	"content": "xx",
+	//	"to": "xxx",
+	//	"create": "12345678"
+	//}
+	Children []goutil.Map `bson:"children" json:"children"` //子评论
+}

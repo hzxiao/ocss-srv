@@ -19,17 +19,16 @@ func RegisterHandle(app *iris.Application) {
 	app.Post("/login", Login)
 	app.Post("/files", UploadFile)
 	app.Get("/files/{id:string}", GetFile)
-	//user
+	//users
 	userRouter := app.Party("/users")
 	UseJwt(userRouter)
-
 	userRouter.Post("/", AddUser)
 	userRouter.Put("/{username:string}", UpdateUser)
 	userRouter.Get("/{username:string}", GetUser)
 
+	//students
 	stuRouter := app.Party("/students")
 	UseJwt(stuRouter)
-
 	stuRouter.Post("/", AddStudent)
 	stuRouter.Put("/{id:string}", UpdateStudent)
 	stuRouter.Delete("/", DeleteStudent)
@@ -59,6 +58,14 @@ func RegisterHandle(app *iris.Application) {
 	resRouter.Delete("/", DelCourseResource)
 	resRouter.Get("/", GetCourseResource)
 
+	//comments
+	commentRouter := app.Party("/comments")
+	UseJwt(commentRouter)
+	commentRouter.Post("/", AddComment)
+	commentRouter.Delete("/{id:string}", DelComment)
+	commentRouter.Get("/", ListComment)
+	commentRouter.Post("/{id:string}/children", AddChildComment)
+	commentRouter.Delete("/{id:string}/children/{childId:string}", DelChildComment)
 }
 
 func UseJwt(partys ...router.Party) {
