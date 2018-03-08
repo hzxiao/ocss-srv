@@ -44,7 +44,6 @@ func RegisterHandle(app *iris.Application) {
 	teacherRouter.Get("/", GetTeachers)
 	teacherRouter.Get("/{id:string}", GetTeacher)
 
-
 	//depts
 	app.Get("/depts", GetAllDept)
 
@@ -66,6 +65,12 @@ func RegisterHandle(app *iris.Application) {
 	commentRouter.Get("/", ListComment)
 	commentRouter.Post("/{id:string}/children", AddChildComment)
 	commentRouter.Delete("/{id:string}/children/{childId:string}", DelChildComment)
+
+	//notices
+	noticeRouter := app.Party("/notices")
+	UseJwt(noticeRouter)
+	noticeRouter.Put("/{id:string}", UpdateNotice)
+	noticeRouter.Get("/", ListNotice)
 }
 
 func UseJwt(partys ...router.Party) {

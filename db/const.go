@@ -30,3 +30,8 @@ const (
 	StatusNormal  = 1
 	StatusDeleted = 3
 )
+
+const (
+	NoticeStateUnRead = 1
+	NoticeStatusRead  = 2
+)

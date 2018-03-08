@@ -61,7 +61,7 @@ func DelCourseResource(tid, tcid string, rids []string) error {
 
 func ListCourseResource(cond goutil.Map, sort []string, skip, limit int) ([]*CourseResource, int, error) {
 	var resourceList []*CourseResource
-	total, err := list(CollectionStudent, tools.ToBsonMap(cond), nil, sort, skip, limit, &resourceList)
+	total, err := list(CollectionResource, tools.ToBsonMap(cond), nil, sort, skip, limit, &resourceList)
 	if err != nil {
 		return nil, 0, err
 	}
