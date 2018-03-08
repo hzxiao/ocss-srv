@@ -34,4 +34,5 @@ func TestDB(t *testing.T) {
 func removeAll() {
 	C(CollectionUser).RemoveAll(nil)
 	C(CollectionComment).RemoveAll(nil)
+
 }

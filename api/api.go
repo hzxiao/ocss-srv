@@ -66,6 +66,15 @@ func RegisterHandle(app *iris.Application) {
 	commentRouter.Get("/", ListComment)
 	commentRouter.Post("/{id:string}/children", AddChildComment)
 	commentRouter.Delete("/{id:string}/children/{childId:string}", DelChildComment)
+
+	//course
+
+	courseRouter := app.Party("/courses")
+	courseRouter.Post("/add", AddCourse)
+	courseRouter.Put("/{id:string}", UpdateCourse)
+	courseRouter.Delete("/{id:string}", DeleteCourse)
+	courseRouter.Get("/list", GetCourses)
+	courseRouter.Get("/{id:string}", GetCourse)
 }
 
 func UseJwt(partys ...router.Party) {

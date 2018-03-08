@@ -20,6 +20,13 @@ const (
 	UserStatsDelete = 3
 )
 
+//课程状态
+const (
+	CourseStatusChecking = 1
+	CourseStatusChecked = 2
+	CourseStatusDelete = 3
+)
+
 //error
 var (
 	ErrNotFound = errors.New("not found")
