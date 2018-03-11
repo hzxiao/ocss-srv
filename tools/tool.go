@@ -1,9 +1,12 @@
 package tools
 
 import (
+	"fmt"
 	"github.com/hzxiao/goutil"
+	"github.com/juju/errors"
 	"gopkg.in/mgo.v2/bson"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -45,4 +48,13 @@ func ParseRegex(str string) string {
 		result += item + ".*"
 	}
 	return result
+}
+
+func ReserveDecimalFractionOf(value float64, n int) (float64, error) {
+	if n < 0 {
+		return value, errors.New("n can not less than zero")
+	}
+	f := "%0." + strconv.Itoa(n) + "f"
+	s := fmt.Sprintf(f, value)
+	return strconv.ParseFloat(s, 64)
 }

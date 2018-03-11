@@ -113,18 +113,15 @@ type TeachCourse struct {
 	Status   int        `bson:"status" json:"status"`
 	Create   int64      `bson:"create" json:"create"`
 	Update   int64      `bson:"update" json:"update"`
-}
-
-//选课
-type LearnCourse struct {
-	ID            string  `bson:"_id" json:"id"`
-	TCID          string  `bson:"tcid" json:"tcid"` //teach course id
-	SID           string  `bson:"sid" json:"sid"`   //student id
-	Grade         float64 `bson:"grade" json:"grade"`
-	OrdinaryGrade float64 `bson:"ordinaryGrade" json:"ordinaryGrade"`
-	ExamGrade     float64 `bson:"examGrade" json:"examGrade"`
-	Create        int64   `bson:"create" json:"create"`
-	Update        int64   `bson:"update" json:"update"`
+	//{
+	//	"sid": "xxxx",
+	//	"grade": 100,
+	//	"ordinaryGrade": 100,
+	//	"examGrade":100,
+	//	"create": 12222222,
+	//	"update": 12222222
+	//}
+	StuInfo []goutil.Map `bson:"stuInfo" json:"stuInfo"`
 }
 
 type CourseResource struct {

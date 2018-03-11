@@ -37,16 +37,17 @@ func InitDB(url string, dbName string) error {
 
 //db collection name
 const (
-	CollectionUser     = "user"
-	CollectionDept     = "dept"
-	CollectionMajor    = "major"
-	CollectionStudent  = "student"
-	CollectionTeacher  = "teacher"
-	CollectionCourse   = "course"
-	CollectionFile     = "file"
-	CollectionResource = "resource"
-	CollectionComment  = "comment"
-	CollectionNotice   = "notice"
+	CollectionUser        = "user"
+	CollectionDept        = "dept"
+	CollectionMajor       = "major"
+	CollectionStudent     = "student"
+	CollectionTeacher     = "teacher"
+	CollectionCourse      = "course"
+	CollectionFile        = "file"
+	CollectionResource    = "resource"
+	CollectionComment     = "comment"
+	CollectionNotice      = "notice"
+	CollectionTeachCourse = "teach_course"
 )
 
 func PingLoop(sess *mgo.Session, url, dbName string) {

@@ -23,13 +23,14 @@ const (
 //课程状态
 const (
 	CourseStatusChecking = 1
-	CourseStatusChecked = 2
-	CourseStatusDelete = 3
+	CourseStatusChecked  = 2
+	CourseStatusDelete   = 3
 )
 
 //error
 var (
-	ErrNotFound = errors.New("not found")
+	ErrNotFound     = errors.New("not found")
+	ErrAlreadyExist = errors.New("already exist")
 )
 
 //
@@ -41,4 +42,9 @@ const (
 const (
 	NoticeStateUnRead = 1
 	NoticeStatusRead  = 2
+)
+
+const (
+	TeachCourseStatusSelectable    = 1
+	TeachCourseStatusNonselectable = 2
 )
