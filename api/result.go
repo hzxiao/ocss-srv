@@ -14,7 +14,7 @@ func WriteResultSuccess(ctx context.Context, data interface{}) {
 		Code: CodeSuccess,
 		Data: data,
 	})
-	ctx.ResponseWriter().Header().Set("access-control-allow-origin", "*")
+	//ctx.ResponseWriter().Header().Set("access-control-allow-origin", "*")
 	ctx.StopExecution()
 }
 
@@ -65,6 +65,6 @@ func WriteResultWithSrvErr(ctx context.Context, err error) {
 
 func writeResult(ctx context.Context, result *Result) {
 	ctx.JSON(result)
-	ctx.ResponseWriter().Header().Set("access-control-allow-origin", "*")
+	//ctx.ResponseWriter().Header().Set("access-control-allow-origin", "*")
 	ctx.StopExecution()
 }

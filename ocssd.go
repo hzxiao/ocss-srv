@@ -48,5 +48,7 @@ func Cors(app *iris.Application) {
 	app.WrapRouter(cors.WrapNext(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowCredentials: true,
+		AllowedMethods:   []string{"POST", "GET", "OPTIONS", "DELETE", "PUT"},
+		AllowedHeaders:   []string{"x-requested-with", "Content-Type", "origin", "authorization", "accept", "client-security-token"},
 	}))
 }
