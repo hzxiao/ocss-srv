@@ -40,7 +40,7 @@ func main() {
 
 	api.RegisterHandle(app)
 
-	app.StaticWeb("/", ".")
+	app.StaticWeb("/", config.GetString("file.webPath"))
 	app.Run(iris.Addr(config.GetString("server.port")), iris.WithCharset("UTF-8"))
 }
 

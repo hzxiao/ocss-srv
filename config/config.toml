@@ -13,3 +13,4 @@ majorPath = "data/major.json"
 
 [file]
 location = "/home/jks/app/files"
+webPath = "/home/jks/app/ocss-front"
