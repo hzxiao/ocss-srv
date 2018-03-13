@@ -28,7 +28,7 @@ func RegisterHandle(app *iris.Application) {
 
 	//students
 	stuRouter := app.Party("/students")
-	//UseJwt(stuRouter)
+	UseJwt(stuRouter)
 	stuRouter.Post("/", AddStudent)
 	stuRouter.Put("/{id:string}", UpdateStudent)
 	stuRouter.Delete("/", DeleteStudent)
