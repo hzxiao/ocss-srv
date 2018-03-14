@@ -81,8 +81,12 @@ func AddMajor(major *Major) error {
 	return err
 }
 
-func FindAllMajor() ([]*Major, error) {
+func FindAllMajor(deptId string) ([]*Major, error) {
+	var finder bson.M
+	if deptId != "" {
+		finder = bson.M{"deptId": deptId}
+	}
 	var majorList []*Major
-	err := C(CollectionMajor).Find(nil).All(&majorList)
+	err := C(CollectionMajor).Find(finder).All(&majorList)
 	return majorList, err
 }

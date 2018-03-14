@@ -30,7 +30,15 @@ func CallGetAllDept() (goutil.Map, error) {
 }
 
 func GetAllMajor(ctx context.Context) {
-	majorList, err := db.FindAllMajor()
+	argMap, err := CheckURLArg(ctx.FormValues(), []*Arg{
+		{Key: "deptId", Type: "string"},
+	})
+	if err != nil {
+		WriteResultWithArgErr(ctx, err)
+		return
+	}
+
+	majorList, err := db.FindAllMajor(argMap.GetString("deptId"))
 	if err != nil {
 		WriteResultWithSrvErr(ctx, err)
 		return
