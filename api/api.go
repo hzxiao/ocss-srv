@@ -29,19 +29,19 @@ func RegisterHandle(app *iris.Application) {
 	//students
 	stuRouter := app.Party("/students")
 	UseJwt(stuRouter)
-	stuRouter.Post("/", AddStudent)
+	stuRouter.Post("/add", AddStudent)
 	stuRouter.Put("/{id:string}", UpdateStudent)
-	stuRouter.Delete("/", DeleteStudent)
-	stuRouter.Get("/", GetStudents)
+	stuRouter.Delete("/delete/", DeleteStudent)
+	stuRouter.Get("/list", GetStudents)
 	stuRouter.Get("/{id:string}", GetStudent)
 
 	//teachers
 	teacherRouter := app.Party("/teachers")
 	UseJwt(teacherRouter)
-	teacherRouter.Post("/", AddTeacher)
+	teacherRouter.Post("/add", AddTeacher)
 	teacherRouter.Put("/{id:string}", UpdateTeacher)
-	teacherRouter.Delete("/", DeleteTeacher)
-	teacherRouter.Get("/", GetTeachers)
+	teacherRouter.Delete("/delete", DeleteTeacher)
+	teacherRouter.Get("/list", GetTeachers)
 	teacherRouter.Get("/{id:string}", GetTeacher)
 
 	//depts
@@ -53,31 +53,31 @@ func RegisterHandle(app *iris.Application) {
 	//resource
 	resRouter := app.Party("/resources")
 	UseJwt(resRouter)
-	resRouter.Post("/", AddCourseResource)
-	resRouter.Delete("/", DelCourseResource)
-	resRouter.Get("/", GetCourseResource)
+	resRouter.Post("/add", AddCourseResource)
+	resRouter.Delete("/delete", DelCourseResource)
+	resRouter.Get("/list", GetCourseResource)
 
 	//comments
 	commentRouter := app.Party("/comments")
 	UseJwt(commentRouter)
-	commentRouter.Post("/", AddComment)
-	commentRouter.Delete("/{id:string}", DelComment)
-	commentRouter.Get("/", ListComment)
+	commentRouter.Post("/add", AddComment)
+	commentRouter.Delete("/delete/{id:string}", DelComment)
+	commentRouter.Get("/list", ListComment)
 	commentRouter.Post("/{id:string}/children", AddChildComment)
-	commentRouter.Delete("/{id:string}/children/{childId:string}", DelChildComment)
+	commentRouter.Delete("/delete/{id:string}/children/{childId:string}", DelChildComment)
 
 	//notices
 	noticeRouter := app.Party("/notices")
 	UseJwt(noticeRouter)
 	noticeRouter.Put("/{id:string}", UpdateNotice)
-	noticeRouter.Get("/", ListNotice)
+	noticeRouter.Get("/list", ListNotice)
 
 	//course
 	courseRouter := app.Party("/courses")
 	UseJwt(commentRouter)
 	courseRouter.Post("/add", AddCourse)
 	courseRouter.Put("/{id:string}", UpdateCourse)
-	courseRouter.Delete("/{id:string}", DeleteCourse)
+	courseRouter.Delete("/delete/{id:string}", DeleteCourse)
 	courseRouter.Get("/list", GetCourses)
 	courseRouter.Get("/{id:string}", GetCourse)
 }
