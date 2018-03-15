@@ -29,7 +29,7 @@ type Student struct {
 	Name       string     `bson:"name" json:"name"`
 	Dept       goutil.Map `bson:"dept" json:"dept"`
 	Major      goutil.Map `bson:"major" json:"major"`
-	Clazz      string     `bson:"clazz" json:"clazz"`
+	Class      string     `bson:"class" json:"class"`
 	Sex        string     `bson:"sex" json:"sex"`
 	Age        int        `bson:"age" json:"age"`
 	Credit     string     `bson:"credit" json:"credit"`
