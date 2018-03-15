@@ -58,3 +58,16 @@ func ReserveDecimalFractionOf(value float64, n int) (float64, error) {
 	s := fmt.Sprintf(f, value)
 	return strconv.ParseFloat(s, 64)
 }
+
+func ReplaceKeys(containerMap, replaceMap goutil.Map)  {
+	if len(containerMap) == 0 {
+		return
+	}
+	for k := range replaceMap {
+		if !containerMap.Exist(k) {
+			continue
+		}
+		containerMap.Set(replaceMap.GetString(k), containerMap[k])
+		delete(containerMap, k)
+	}
+}

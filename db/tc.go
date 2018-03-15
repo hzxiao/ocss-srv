@@ -136,6 +136,10 @@ func IsCourseSelectable(tcid string) (bool, error) {
 	return true, nil
 }
 
+func CountTeachCourse(cond goutil.Map) (int, error) {
+	return count(CollectionTeachCourse, tools.ToBsonMap(cond))
+}
+
 //管理员：增加选课、修改选课、删除选课
 //老师：打分 查看选择的学生信息
 

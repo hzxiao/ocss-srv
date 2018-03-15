@@ -152,3 +152,49 @@ func CallGetStudents(token string, argMap goutil.Map) (goutil.Map, error) {
 
 	return handleACallResult(result)
 }
+
+func Count(ctx context.Context) {
+	var info goutil.Map
+	err := ctx.ReadJSON(&info)
+	if err != nil {
+		WriteResultWithArgErr(ctx, err)
+		return
+	}
+
+	result := goutil.Map{}
+	for k := range info {
+		var count int
+		switch k {
+		case "student":
+			cond := info.GetMap(k)
+			tools.ReplaceKeys(cond, goutil.Map{
+				"deptId":  "dept.id",
+				"majorId": "major.id",
+			})
+			count, err = db.CountStudent(cond)
+		case "course":
+			cond := info.GetMap(k)
+			tools.ReplaceKeys(cond, goutil.Map{
+				"deptId": "dept.id",
+			})
+			count, err = db.CountCourse(cond)
+		case "teacher":
+			cond := info.GetMap(k)
+			tools.ReplaceKeys(cond, goutil.Map{
+				"deptId": "dept.id",
+			})
+			count, err = db.CountTeacher(cond)
+		case "teachCourse":
+			cond := info.GetMap(k)
+			count, err = db.CountTeachCourse(cond)
+		}
+		if err != nil {
+			log.Errorf("[Count] by key(%v), cond(%v) error(%v)", k, info.GetMap(k), err)
+			WriteResultWithSrvErr(ctx, err)
+			return
+		}
+		result.Set(k, count)
+	}
+
+	WriteResultSuccess(ctx, result)
+}

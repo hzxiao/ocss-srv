@@ -19,6 +19,7 @@ func RegisterHandle(app *iris.Application) {
 	app.Post("/login", Login)
 	app.Post("/files", UploadFile)
 	app.Get("/files/{id:string}", GetFile)
+	app.Post("/count", Count)
 	//users
 	userRouter := app.Party("/users")
 	UseJwt(userRouter)
