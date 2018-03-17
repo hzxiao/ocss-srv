@@ -140,8 +140,12 @@ func GetStudents(ctx context.Context) {
 		exactCondMap.Set("class", argMap.Get("class"))
 	}
 	exactCondMap.Set("status", int(argMap.GetInt64("status")))
+	page := argMap.GetInt64("page")
+	if page > 0 {
+		page--
+	}
 	limit := int(argMap.GetInt64("pageSize"))
-	skip := int(argMap.GetInt64("page")) * limit
+	skip := int(page) * limit
 	var sort []string
 	if argMap.Exist("sort") {
 		sort = append(sort, argMap.GetString("sort"))
