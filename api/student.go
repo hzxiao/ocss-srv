@@ -126,7 +126,7 @@ func GetStudents(ctx context.Context) {
 		exactCondMap.Set("major.id", argMap.Get("majorId"))
 	}
 	if argMap.Exist("schoolYear") {
-		fuzzyCondMap.Set("schoolYear", argMap.Get("schoolYear"))
+		exactCondMap.Set("schoolYear", argMap.Get("schoolYear"))
 	}
 	exactCondMap.Set("status", int(argMap.GetInt64("status")))
 	limit := int(argMap.GetInt64("pageSize"))
