@@ -125,7 +125,7 @@ func GetStudents(ctx context.Context) {
 		fuzzyCondMap.Set("name", argMap.Get("name"))
 	}
 	if argMap.Exist("id") {
-		fuzzyCondMap.Set("id", argMap.Get("id"))
+		fuzzyCondMap.Set("_id", argMap.Get("id"))
 	}
 	if argMap.Exist("deptId") {
 		exactCondMap.Set("dept.id", argMap.Get("deptId"))
