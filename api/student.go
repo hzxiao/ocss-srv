@@ -105,6 +105,7 @@ func GetStudents(ctx context.Context) {
 		{Key: "page", Type: "int", DefaultValue: "1"},
 		{Key: "pageSize", Type: "int", DefaultValue: "20"},
 		{Key: "sort", Type: "string"},
+		{Key: "schoolYear", Type: "string"},
 	})
 	if err != nil {
 		WriteResultWithArgErr(ctx, err)
@@ -123,6 +124,9 @@ func GetStudents(ctx context.Context) {
 	}
 	if argMap.Exist("majorId") {
 		exactCondMap.Set("major.id", argMap.Get("majorId"))
+	}
+	if argMap.Exist("schoolYear") {
+		fuzzyCondMap.Set("schoolYear", argMap.Get("schoolYear"))
 	}
 	exactCondMap.Set("status", int(argMap.GetInt64("status")))
 	limit := int(argMap.GetInt64("pageSize"))
