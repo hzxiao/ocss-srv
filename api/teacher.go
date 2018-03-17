@@ -72,6 +72,12 @@ func DeleteTeacher(ctx context.Context) {
 		return
 	}
 
+	err = db.UpdateUserByIDs(ids, goutil.Map{"status": db.UserStatsDelete})
+	if err != nil {
+		log.Errorf("[DeleteTeacher] delete ids(%v) error(%v)", ids, err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
 	WriteResultSuccess(ctx, goutil.Map{
 		"ids": ids,
 	})

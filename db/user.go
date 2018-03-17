@@ -119,3 +119,15 @@ func FindUserByUsername(username string) (*User, error) {
 	err := C(CollectionUser).FindId(username).One(&user)
 	return &user, err
 }
+
+func UpdateUserByIDs(ids []string, update goutil.Map) error {
+	if len(ids) == 0 {
+		return nil
+	}
+	if len(update) == 0 {
+		return errors.New("update is empty")
+	}
+
+	_, err := C(CollectionUser).UpdateAll(bson.M{"_id": bson.M{"$in": ids}}, bson.M{"$set": tools.ToBsonMap(update)})
+	return err
+}
