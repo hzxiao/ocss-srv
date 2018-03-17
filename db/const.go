@@ -27,6 +27,15 @@ const (
 	CourseStatusDelete   = 3
 )
 
+//学生选课状态
+const (
+	SCourseStatusSelecting = 1
+	SCourseStatusSelected = 2
+	SCourseStatusGrade = 3
+	SCourseStatusOver = 4
+	SCourseStatusForbid = 5
+)
+
 //error
 var (
 	ErrNotFound     = errors.New("not found")
@@ -44,7 +53,11 @@ const (
 	NoticeStatusRead  = 2
 )
 
+//选课的状态
 const (
 	TeachCourseStatusSelectable    = 1
 	TeachCourseStatusNonselectable = 2
+	TeachCourseStatusLearning = 3
+	TeachCourseStatusOver = 5
+
 )
