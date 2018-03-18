@@ -81,13 +81,14 @@ func CallUpdateCourse(token,id string, course *db.Course) (goutil.Map, error) {
 }
 
 func DeleteCourse(ctx context.Context) {
-	var ids []string
-	err := ctx.ReadJSON(&ids)
+	var data goutil.Map
+	err := ctx.ReadJSON(&data)
 	if err != nil {
 		WriteResultWithArgErr(ctx, err)
 		return
 	}
 
+	ids := data.GetStringArray("ids");
 	err = db.UpdateCourseByIDs(ids, goutil.Map{"status": db.CourseStatusDelete})
 	if err != nil {
 		log.Printf("[DeleteCourse] delete ids(%v) error(%v)", ids, err)

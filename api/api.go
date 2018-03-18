@@ -78,7 +78,7 @@ func RegisterHandle(app *iris.Application) {
 	UseJwt(courseRouter)
 	courseRouter.Post("/add", AddCourse)
 	courseRouter.Put("/{id:string}", UpdateCourse)
-	courseRouter.Delete("/delete/{id:string}", DeleteCourse)
+	courseRouter.Delete("/delete/", DeleteCourse)
 	courseRouter.Get("/list", GetCourses)
 	courseRouter.Get("/{id:string}", GetCourse)
 
