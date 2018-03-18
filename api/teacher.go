@@ -23,7 +23,7 @@ func AddTeacher(ctx context.Context) {
 	if err != nil {
 		log.Errorf("[AddTeacher] add teacher(%v) error(%v)", goutil.Struct2Json(teacher), err)
 		if strings.Contains(err.Error(), "already exists") {
-			WriteResultErrByMsg(ctx, CodeAlreadyExists, "学号已存在", err)
+			WriteResultErrByMsg(ctx, CodeAlreadyExists, "工号已存在", err)
 			return
 		}
 		WriteResultWithSrvErr(ctx, err)
@@ -106,7 +106,7 @@ func GetTeachers(ctx context.Context) {
 		{Key: "name", Type: "string"},
 		{Key: "id", Type: "string"},
 		{Key: "deptId", Type: "string"},
-		{Key: "majorId", Type: "string"},
+		{Key: "title", Type: "string"},
 		{Key: "status", Type: "int", DefaultValue: strconv.Itoa(db.UserStatsNormal)},
 		{Key: "page", Type: "int", DefaultValue: "1"},
 		{Key: "pageSize", Type: "int", DefaultValue: "20"},
@@ -122,17 +122,21 @@ func GetTeachers(ctx context.Context) {
 		fuzzyCondMap.Set("name", argMap.Get("name"))
 	}
 	if argMap.Exist("id") {
-		fuzzyCondMap.Set("id", argMap.Get("id"))
+		fuzzyCondMap.Set("_id", argMap.Get("id"))
 	}
 	if argMap.Exist("deptId") {
 		exactCondMap.Set("dept.id", argMap.Get("deptId"))
 	}
-	if argMap.Exist("majorId") {
-		exactCondMap.Set("major.id", argMap.Get("majorId"))
+	if argMap.Exist("title") {
+		exactCondMap.Set("title", argMap.Get("title"))
 	}
 	exactCondMap.Set("status", int(argMap.GetInt64("status")))
+	page := argMap.GetInt64("page")
+	if page > 0 {
+		page--
+	}
 	limit := int(argMap.GetInt64("pageSize"))
-	skip := int(argMap.GetInt64("page")) * limit
+	skip := int(page) * limit
 	var sort []string
 	if argMap.Exist("sort") {
 		sort = append(sort, argMap.GetString("sort"))
