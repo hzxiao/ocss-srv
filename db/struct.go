@@ -81,23 +81,17 @@ type TeachCourse struct {
 	//eg:
 	//[
 	//	{
-	//		"dayOfWeek": 1,
-	//		"startTime": "10:00",
-	//		"endTime": "12:00",
+	//		"takeTimes": [
+	//			{
+	//				"dayOfWeek": "一",
+	//				"sections": [1, 2]
+	//			}
+	//		],
 	//		"startWeek": 12,
 	//		"endWeek": 18,
 	//		"building": "XX楼",
 	//		"classroom": "201",
 	//	},
-	//	{
-	//		"dayOfWeek": 1,
-	//		"startTime": "10:00",
-	//		"endTime": "12:00",
-	//		"startWeek": 12,
-	//		"endWeek": 18,
-	//		"building": "XX楼",
-	//		"classroom": "201",
-	//	}
 	//]
 	TakeInfo        []goutil.Map `bson:"takeInfo" json:"takeInfo"`
 	StartSelectTime int64        `bson:"startSelectTime" json:"startSelectTime"`

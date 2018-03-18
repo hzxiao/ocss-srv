@@ -171,6 +171,9 @@ func ListTeachCourse(ctx context.Context) {
 		for j := range crsList {
 			if crsList[j].ID == tcs[i].CID {
 				tc.Set("courseName", crsList[j].Name)
+				if crsList[j].Dept != nil {
+					tc.Set("deptName", crsList[j].Dept.GetString("name"))
+				}
 				break
 			}
 		}
