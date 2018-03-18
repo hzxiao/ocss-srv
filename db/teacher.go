@@ -101,7 +101,7 @@ func LoadTeacher(id string) (*Teacher, error) {
 func ListTeacherByIds(ids []string) ([]*Teacher, error) {
 	finder := bson.M{"_id": bson.M{"$in": ids}}
 	var teList []*Teacher
-	_, err := list(CollectionTeacher, finder, nil, nil, 0, 0, &stuList)
+	_, err := list(CollectionTeacher, finder, nil, nil, 0, 0, &teList)
 	if err != nil {
 		return nil, err
 	}
