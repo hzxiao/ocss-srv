@@ -97,3 +97,13 @@ func ListStudent(exactCond, fuzzyCond goutil.Map, sort []string, skip, limit int
 func CountStudent(cond goutil.Map) (int, error) {
 	return count(CollectionStudent, tools.ToBsonMap(cond))
 }
+
+func ListStudentByIds(ids []string) ([]*Student, error) {
+	finder := bson.M{"_id": bson.M{"$in": ids}}
+	var stuList []*Student
+	_, err := list(CollectionStudent, finder, nil, nil, 0, 0, &stuList)
+	if err != nil {
+		return nil, err
+	}
+	return stuList, nil
+}

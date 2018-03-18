@@ -93,3 +93,13 @@ func ListCourse(exactCond, fuzzyCond goutil.Map, sort []string, skip, limit int)
 func CountCourse(cond goutil.Map) (int, error) {
 	return count(CollectionCourse, tools.ToBsonMap(cond))
 }
+
+func ListCourseByIds(ids []string) ([]*Course, error) {
+	finder := bson.M{"_id": bson.M{"$in": ids}}
+	var crsList []*Course
+	_, err := list(CollectionCourse, finder, nil, nil, 0, 0, &crsList)
+	if err != nil {
+		return nil, err
+	}
+	return crsList, nil
+}

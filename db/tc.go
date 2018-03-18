@@ -42,6 +42,36 @@ func AddTeachCourse(tc *TeachCourse) error {
 	return nil
 }
 
+func ListTeachCourses(status int, selectState int, cids, tids []string, sort []string, skip, limit int) ([]*TeachCourse, int, error) {
+	finder := bson.M{}
+	if status > 0 {
+		finder["status"] = status
+	}
+	now := tools.NowMillisecond()
+	switch selectState {
+	case 1:
+		finder["endSelectTime"] = bson.M{"$lt": now}
+	case 2:
+		finder["startSelectTime"] = bson.M{"$lt": now}
+		finder["endSelectTime"] = bson.M{"$gt": now}
+	case 3:
+		finder["startSelectTime"] = bson.M{"$gt": now}
+	}
+	if len(cids) > 0 {
+		finder["cid"] = bson.M{"$in": cids}
+	}
+	if len(tids) > 0 {
+		finder["tid"] = bson.M{"$in": tids}
+	}
+	var teachCourseList []*TeachCourse
+	total, err := list(CollectionTeachCourse, finder, nil, sort, skip, limit, &teachCourseList)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return teachCourseList, total, nil
+}
+
 func UpdateTeachCourseByIDs(ids []string, tc *TeachCourse) (err error) {
 	if len(ids) == 0 {
 		return nil

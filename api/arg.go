@@ -80,3 +80,23 @@ func TakeByKeys(inMap goutil.Map, keys ...string) goutil.Map {
 	}
 	return outMap
 }
+
+func TakeByReplaceKeys(inMap goutil.Map, keyMap goutil.Map) goutil.Map {
+	outMap := goutil.Map{}
+	for k := range keyMap {
+		v, ok := inMap[k]
+		if ok {
+			outMap.Set(keyMap.GetString(k), v)
+		}
+	}
+	return outMap
+}
+
+func HasOneOfKeys(inMap goutil.Map, keys ...string) bool {
+	for _, k := range keys {
+		if _, ok := inMap[k]; ok {
+			return true
+		}
+	}
+	return false
+}
