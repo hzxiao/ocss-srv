@@ -75,7 +75,7 @@ func RegisterHandle(app *iris.Application) {
 
 	//course
 	courseRouter := app.Party("/courses")
-	UseJwt(commentRouter)
+	UseJwt(courseRouter)
 	courseRouter.Post("/add", AddCourse)
 	courseRouter.Put("/{id:string}", UpdateCourse)
 	courseRouter.Delete("/delete/{id:string}", DeleteCourse)
