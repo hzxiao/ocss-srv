@@ -78,43 +78,37 @@ type TeachCourse struct {
 	ID  string `bson:"_id" json:"id"`
 	CID string `bson:"cid" json:"cid"` //course id
 	TID string `bson:"tid" json:"tid"` //teacher id
-//eg:
-	//[
-	//	{
-	//		"startWeek": 1,
-	//		"endWeek": 8
-	//	},
-	//	{
-	//		"startWeek": 12,
-	//		"endWeek": 18
-	//	}
-	//]
-	TakeWeeks []goutil.Map `bson:"takeWeeks" json:"takeWeeks"` //
 	//eg:
 	//[
 	//	{
 	//		"dayOfWeek": 1,
 	//		"startTime": "10:00",
-	//		"endTime": "12:00"
+	//		"endTime": "12:00",
+	//		"startWeek": 12,
+	//		"endWeek": 18,
+	//		"building": "XX楼",
+	//		"classroom": "201",
 	//	},
 	//	{
-	//		"dayOfWeek": 2,
+	//		"dayOfWeek": 1,
 	//		"startTime": "10:00",
-	//		"endTime": "12:00"
+	//		"endTime": "12:00",
+	//		"startWeek": 12,
+	//		"endWeek": 18,
+	//		"building": "XX楼",
+	//		"classroom": "201",
 	//	}
 	//]
-	TakeTimes       []goutil.Map `bson:"takeTimes" json:"takeTimes"`
+	TakeInfo        []goutil.Map `bson:"takeInfo" json:"takeInfo"`
 	StartSelectTime int64        `bson:"startSelectTime" json:"startSelectTime"`
 	EndSelectTime   int64        `bson:"endSelectTime" json:"endSelectTime"`
-	//eg: {"building": "XX楼", "classroom": "201"}
-	Addr     goutil.Map `bson:"addr" json:"addr"`
-	Capacity int        `bson:"capacity" json:"capacity"`
-	Margin   int        `bson:"margin" json:"margin"`
-	Status   int        `bson:"status" json:"status"`
-	Create   int64      `bson:"create" json:"create"`
-	Update   int64      `bson:"update" json:"update"`
+	Capacity        int          `bson:"capacity" json:"capacity"`
+	Margin          int          `bson:"margin" json:"margin"`
+	Status          int          `bson:"status" json:"status"`
+	Create          int64        `bson:"create" json:"create"`
+	Update          int64        `bson:"update" json:"update"`
 
-//{
+	//{
 	//	"sid": "xxxx",
 	//	"cstatus: 1,内嵌数组匹配是按先后顺序的，不需要条件同时满足，可以多组元素对象满足条件，这样的话会导致得不到指定的元素，如sid是必要的，status为非必要。  之所以命名为cstatus，在bson.M["cstatus"] ["sid"]进行同时匹配时，出现的当["sid"]匹配成功后，在匹配["status"]时会选择满足条件的第一条
 	//	"grade": 100,
@@ -125,8 +119,6 @@ type TeachCourse struct {
 	//}
 	StuInfo []goutil.Map `bson:"stuInfo" json:"stuInfo"`
 }
-
-
 
 type CourseResource struct {
 	ID     string `bson:"_id" json:"id"`

@@ -66,14 +66,8 @@ func UpdateTeachCourseByIDs(ids []string, tc *TeachCourse) (err error) {
 	if tc.Status > 0 {
 		args["status"] = tc.Status
 	}
-	if len(tc.Addr) > 0 {
-		args["addr"] = tc.Addr
-	}
-	if len(tc.TakeTimes) > 0 {
-		args["takeTimes"] = tc.TakeTimes
-	}
-	if len(tc.TakeWeeks) > 0 {
-		args["takeWeeks"] = tc.TakeWeeks
+	if len(tc.TakeInfo) > 0 {
+		args["takeInfo"] = tc.TakeInfo
 	}
 	if tc.StartSelectTime > 0 {
 		args["startSelectTime"] = tc.StartSelectTime
