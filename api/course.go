@@ -149,7 +149,7 @@ func GetCourses(ctx context.Context) {
 		{Key: "attr", Type: "string"},
 		{Key: "nature", Type: "string"},
 		{Key: "campus", Type: "string"},
-		{Key: "status", Type: "int", DefaultValue: strconv.Itoa(db.CourseStatusChecked)},
+		{Key: "status", Type: "int", DefaultValue: strconv.Itoa(db.CourseStatusChecking)},
 		{Key: "page", Type: "int", DefaultValue: "0"},
 		{Key: "pageSize", Type: "int", DefaultValue: "20"},
 		{Key: "sort", Type: "string"},
@@ -167,10 +167,10 @@ func GetCourses(ctx context.Context) {
 		fuzzyCondMap.Set("attr", argMap.Get("attr"))
 	}
 	if argMap.Exist("nature") {
-		fuzzyCondMap.Set("name", argMap.Get("name"))
+		fuzzyCondMap.Set("nature", argMap.Get("nature"))
 	}
 	if argMap.Exist("campus") {
-		fuzzyCondMap.Set("name", argMap.Get("name"))
+		fuzzyCondMap.Set("nature", argMap.Get("nature"))
 	}
 
 	if argMap.Exist("id") {
