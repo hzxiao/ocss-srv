@@ -58,13 +58,14 @@ func UpdateTeacher(ctx context.Context) {
 }
 
 func DeleteTeacher(ctx context.Context) {
-	var ids []string
-	err := ctx.ReadJSON(&ids)
+	var data goutil.Map
+	err := ctx.ReadJSON(&data)
 	if err != nil {
 		WriteResultWithArgErr(ctx, err)
 		return
 	}
 
+	ids := data.GetStringArray("ids");
 	err = db.UpdateTeacherByIDs(ids, goutil.Map{"status": db.UserStatsDelete})
 	if err != nil {
 		log.Errorf("[DeleteTeacher] delete ids(%v) error(%v)", ids, err)
