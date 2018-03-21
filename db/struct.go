@@ -1,6 +1,8 @@
 package db
 
-import "github.com/hzxiao/goutil"
+import (
+	"github.com/hzxiao/goutil"
+)
 
 type User struct {
 	ID       string `bson:"_id" json:"id"`
@@ -78,29 +80,24 @@ type TeachCourse struct {
 	ID  string `bson:"_id" json:"id"`
 	CID string `bson:"cid" json:"cid"` //course id
 	TID string `bson:"tid" json:"tid"` //teacher id
-	//eg:
-	//[
+	//{
+	//	"dayOfWeek": "一",
+	//	"sections": [1, 2]
+	//	}
+	TakeTime goutil.Map `bson:"takeTime" json:"takeTime"` //上课时间
 	//	{
-	//		"takeTimes": [
-	//			{
-	//				"dayOfWeek": "一",
-	//				"sections": [1, 2]
-	//			}
-	//		],
-	//		"startWeek": 12,
-	//		"endWeek": 18,
-	//		"building": "XX楼",
-	//		"classroom": "201",
-	//	},
-	//]
-	TakeInfo        []goutil.Map `bson:"takeInfo" json:"takeInfo"`
-	StartSelectTime int64        `bson:"startSelectTime" json:"startSelectTime"`
-	EndSelectTime   int64        `bson:"endSelectTime" json:"endSelectTime"`
-	Capacity        int          `bson:"capacity" json:"capacity"`
-	Margin          int          `bson:"margin" json:"margin"`
-	Status          int          `bson:"status" json:"status"`
-	Create          int64        `bson:"create" json:"create"`
-	Update          int64        `bson:"update" json:"update"`
+	//			"startWeek": 12,
+	//			"endWeek": 18,
+	//}
+	TakeWeek        goutil.Map `bson:"takeWeek" json:"takeWeek"`
+	Addr            string     `bson:"addr" json:"addr"`
+	StartSelectTime int64      `bson:"startSelectTime" json:"startSelectTime"`
+	EndSelectTime   int64      `bson:"endSelectTime" json:"endSelectTime"`
+	Capacity        int        `bson:"capacity" json:"capacity"`
+	Margin          int        `bson:"margin" json:"margin"`
+	Status          int        `bson:"status" json:"status"`
+	Create          int64      `bson:"create" json:"create"`
+	Update          int64      `bson:"update" json:"update"`
 
 	//{
 	//	"sid": "xxxx",
