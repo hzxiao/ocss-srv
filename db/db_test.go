@@ -17,7 +17,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	err = InitDB("111.230.242.177:27017", "ocss")
+	err = InitDB("111.230.242.177:27017", "ocss-test")
 	if err != nil {
 		panic(err)
 	}
@@ -102,6 +102,7 @@ func TestAddComment2(t *testing.T) {
 			"id": m[c.GetString("开课学院")],
 			"name": c.GetString("开课学院"),
 		}
+		te.Title = "讲师"
 		users = append(users, &User{
 			ID: te.ID,
 			Username: te.ID,
