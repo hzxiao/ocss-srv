@@ -174,6 +174,8 @@ func ListTeachCourse(ctx context.Context) {
 				tc.Set("courseName", crsList[j].Name)
 				if crsList[j].Dept != nil {
 					tc.Set("deptName", crsList[j].Dept.GetString("name"))
+					tc.Set("nature", crsList[j].Nature)
+					tc.Set("attr", crsList[j].Attr)
 				}
 				break
 			}
