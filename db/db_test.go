@@ -17,7 +17,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	err = InitDB("111.230.242.177:27017", "ocss-test")
+	err = InitDB("111.230.242.177:27017", "ocss")
 	if err != nil {
 		panic(err)
 	}
@@ -47,7 +47,7 @@ func removeAll() {
 func TestAddComment2(t *testing.T) {
 	var data goutil.Map
 	var tc []goutil.Map
-	err := tools.UnmarshalJsonFile("./courses.json", &data)
+	err := tools.UnmarshalJsonFile("../data/courses.json", &data)
 	if err != nil {
 		t.Error(err)
 		return
@@ -159,26 +159,26 @@ func TestAddComment2(t *testing.T) {
 		}
 		tcs = append(tcs, tec)
 	}
-	//err = tools.MarshalJsonFile("./users.json", users)
-	//if err != nil {
-	//	t.Error(err)
-	//	return
-	//}
-	//
-	//err = tools.MarshalJsonFile("./teachers.json", teachers)
-	//if err != nil {
-	//	t.Error(err)
-	//	return
-	//}
-	//
-	//err = tools.MarshalJsonFile("./course.json", courses)
-	//if err != nil {
-	//	t.Error(err)
-	//	return
-	//}
+	err = tools.MarshalJsonFile("../data/users.json", users)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = tools.MarshalJsonFile("../data/teachers.json", teachers)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = tools.MarshalJsonFile("../data/course.json", courses)
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
 
-	err = tools.MarshalJsonFile("./tc.json", tcs)
+	err = tools.MarshalJsonFile("../data/tc.json", tcs)
 	if err != nil {
 		t.Error(err)
 		return

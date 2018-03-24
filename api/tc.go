@@ -152,7 +152,7 @@ func ListTeachCourse(ctx context.Context) {
 	cids, tids = nil, nil
 	for i := range tcs {
 		cids = append(cids, tcs[i].CID)
-		tids = append(cids, tcs[i].TID)
+		tids = append(tids, tcs[i].TID)
 	}
 	crsList, err := db.ListCourseByIds(cids)
 	if err != nil {
