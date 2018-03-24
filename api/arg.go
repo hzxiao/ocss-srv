@@ -36,6 +36,9 @@ func CheckURLArg(formValue map[string][]string, args []*Arg) (goutil.Map, error)
 		} else {
 			v = vs[0]
 		}
+		if v == "" {
+			continue
+		}
 		switch arg.Type {
 		case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint32", "uint64":
 			i, err := strconv.ParseInt(v, 10, 64)
