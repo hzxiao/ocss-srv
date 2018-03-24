@@ -6,6 +6,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"log"
 	"time"
+	"github.com/hzxiao/ocss-srv/tools"
 )
 
 var C = func(name string) *mgo.Collection {
@@ -94,4 +95,62 @@ func Ping(sess *mgo.Session) (err error) {
 		return errClosed
 	}
 	return err
+}
+
+func PrepareData() error {
+	fileDir := "../data/"
+
+	//var users []*User
+	//err := tools.UnmarshalJsonFile(fileDir+"users.json", &users)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//for i := range users {
+	//	err = AddUser(users[i])
+	//	if err != nil {
+	//		return err
+	//	}
+	//}
+
+	var courses []*Course
+	err := tools.UnmarshalJsonFile(fileDir+"course.json", &courses)
+	if err != nil {
+		return err
+	}
+
+	for i := range courses {
+		_, err = AddCourse(courses[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	var teachers []*Teacher
+	err = tools.UnmarshalJsonFile(fileDir+"teachers.json", &teachers)
+	if err != nil {
+		return err
+	}
+
+	for i := range teachers {
+		err = AddTeacher(teachers[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	var tcs []*TeachCourse
+	err = tools.UnmarshalJsonFile(fileDir+"tc.json", &tcs)
+	if err != nil {
+		return err
+	}
+
+	for i := range tcs {
+		err = AddTeachCourse(tcs[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

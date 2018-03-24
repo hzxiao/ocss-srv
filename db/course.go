@@ -14,7 +14,9 @@ func AddCourse(course *Course) (*Course,error) {
 	if course.Name == "" {
 		return nil,errors.New("name is empty")
 	}
-	course.ID = tools.GenerateUniqueId()
+	if course.ID == "" {
+		return nil,errors.New("id is empty")
+	}
 	course.Status = CourseStatusChecking
 	course.Create = tools.NowMillisecond()
 	course.Update = course.Create

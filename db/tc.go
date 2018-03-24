@@ -28,7 +28,7 @@ func AddTeachCourse(tc *TeachCourse) error {
 	tc.Update = tc.Create
 	tc.ID = tools.GenerateUniqueId()
 
-	info, err := C(CollectionTeachCourse).Find(bson.M{"cid": tc.CID, "tid": tc.TID}).Apply(mgo.Change{
+	info, err := C(CollectionTeachCourse).FindId(tc.ID).Apply(mgo.Change{
 		Update:    bson.M{"$setOnInsert": tc},
 		Upsert:    true,
 		ReturnNew: true,

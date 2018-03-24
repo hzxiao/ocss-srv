@@ -25,3 +25,14 @@ func UnmarshalJsonFile(filename string, dest interface{}) error {
 	}
 	return json.Unmarshal(buf, &dest)
 }
+
+func MarshalJsonFile(filename string, data interface{})  error {
+	f, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	enc := json.NewEncoder(f)
+	return enc.Encode(&data)
+}

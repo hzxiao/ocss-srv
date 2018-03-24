@@ -80,6 +80,7 @@ func ListTeachCourse(ctx context.Context) {
 		{Key: "name", Type: "string"},
 		{Key: "deptId", Type: "string"},
 		{Key: "nature", Type: "string"},
+		{Key: "attr", Type: "string"},
 		{Key: "status", Type: "int"},
 		{Key: "selectState", Type: "int"},
 		{Key: "page", Type: "int", DefaultValue: "0"},
@@ -92,7 +93,7 @@ func ListTeachCourse(ctx context.Context) {
 	}
 	var cids, tids []string
 	if HasOneOfKeys(argMap, "name", "deptId", "nature") {
-		crsExactMap := TakeByReplaceKeys(argMap, goutil.Map{"deptId": "dept.id", "nature": "nature"})
+		crsExactMap := TakeByReplaceKeys(argMap, goutil.Map{"deptId": "dept.id", "nature": "nature", "attr": "attr"})
 		crsExactMap.Set("status", db.CourseStatusChecking)
 		crsFuzzyMap := TakeByKeys(argMap, "name")
 		crs, _, err := db.ListCourse(crsExactMap, crsFuzzyMap, nil, 0, 0)

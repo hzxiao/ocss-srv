@@ -1,9 +1,10 @@
 package db
 
 import (
-	"github.com/hzxiao/goutil/assert"
-	"testing"
 	"github.com/hzxiao/goutil"
+	"github.com/hzxiao/goutil/assert"
+	"github.com/hzxiao/ocss-srv/tools"
+	"testing"
 )
 
 func TestAddCourse(t *testing.T) {
@@ -12,12 +13,13 @@ func TestAddCourse(t *testing.T) {
 	var err error
 	//1 add user1
 	course1 := &Course{
+		ID:   tools.GenerateUniqueId(),
 		Name: "yuwen",
 	}
 	course, err := AddCourse(course1)
 	assert.NoError(t, err)
 	assert.NotNil(t, course)
-	assert.Equal(t, course1.Name, course)
+	assert.Equal(t, course1.Name, course.Name)
 
 	//test err
 
@@ -36,21 +38,22 @@ func TestUpdateCourse(t *testing.T) {
 	var err error
 	c := &Course{
 		Name: "语文",
+		ID:   tools.GenerateUniqueId(),
 	}
 	course, err := AddCourse(c)
 	assert.NoError(t, err)
-	assert.NotNil(t,course)
+	assert.NotNil(t, course)
 
 	cu := &Course{
-		ID:course.ID,
-		Name: "语文1",
-		Status:   CourseStatusChecked,
+		ID:     course.ID,
+		Name:   "语文1",
+		Status: CourseStatusChecked,
 		Credit: "3",
-		Period:"4",
-		Attr:"基础",
-		Nature:"必修",
-		Campus:"大学城",
-		Desc:"基础课程",
+		Period: "4",
+		Attr:   "基础",
+		Nature: "必修",
+		Campus: "大学城",
+		Desc:   "基础课程",
 	}
 
 	err = UpdateCourse(cu)
@@ -71,7 +74,7 @@ func TestUpdateCourse(t *testing.T) {
 
 	//test user not exists
 	u1 := &Course{
-		ID:"12345",
+		ID: "12345",
 	}
 
 	err = UpdateCourse(u1)
@@ -79,7 +82,17 @@ func TestUpdateCourse(t *testing.T) {
 }
 
 func TestListCourse(t *testing.T) {
+	removeAll()
+
 	var err error
+	c := &Course{
+		Name: "语文",
+		ID:   tools.GenerateUniqueId(),
+	}
+	course, err := AddCourse(c)
+	assert.NoError(t, err)
+	assert.NotNil(t, course)
+
 	exactCondMap, fuzzyCondMap := goutil.Map{}, goutil.Map{}
 	exactCondMap.Set("status", 1)
 	fuzzyCondMap.Set("name", "语")
@@ -87,13 +100,12 @@ func TestListCourse(t *testing.T) {
 	sort = append(sort, "name")
 	courses, num, err := ListCourse(exactCondMap, fuzzyCondMap, sort, 0, 5)
 	assert.NoError(t, err)
-	assert.NotNil(t, courses)
+	assert.NotEqual(t, 0, len(courses))
 	assert.Equal(t, exactCondMap.GetInt64("status"), int64(courses[0].Status))
 	assert.Equal(t, 1, num)
 
-	course, err := LoadCourse(courses[0].ID)
+	course, err = LoadCourse(courses[0].ID)
 	assert.NoError(t, err)
 	assert.NotNil(t, course)
 	assert.Equal(t, exactCondMap.GetInt64("status"), int64(course.Status))
 }
-
