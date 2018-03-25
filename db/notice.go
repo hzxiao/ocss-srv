@@ -98,7 +98,7 @@ func CountNoticeDiffStatus(uid string) (goutil.Map, error) {
 	pipe := []bson.M{
 		{"$match": bson.M{"uid": uid}},
 		{"$group": bson.M{"_id": "$status", "count": bson.M{"$sum": 1}}},
-		{"$project": bson.M{"$status": "$_id.status", "count": 1, "_id": 0}},
+		{"$project": bson.M{"status": "$_id.status", "count": 1, "_id": 0}},
 	}
 	var list []goutil.Map
 	err := C(CollectionNotice).Pipe(pipe).All(&list)
