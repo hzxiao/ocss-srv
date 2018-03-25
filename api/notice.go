@@ -58,3 +58,16 @@ func UpdateNotice(ctx context.Context) {
 	}
 	WriteResultSuccess(ctx, "OK")
 }
+
+func CountNotice(ctx context.Context) {
+	uid := ctx.Values().GetString("uid")
+	res, err := db.CountNoticeDiffStatus(uid)
+	if err != nil {
+		log.Errorf("[CountNotice] get by(%v) error(%v)", uid, err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+	WriteResultSuccess(ctx, goutil.Map{
+		"result": res,
+	})
+}

@@ -30,10 +30,10 @@ const (
 //学生选课状态
 const (
 	SCourseStatusSelecting = 1
-	SCourseStatusSelected = 2
-	SCourseStatusGrade = 3
-	SCourseStatusOver = 4
-	SCourseStatusForbid = 5
+	SCourseStatusSelected  = 2
+	SCourseStatusGrade     = 3
+	SCourseStatusOver      = 4
+	SCourseStatusForbid    = 5
 )
 
 //error
@@ -49,15 +49,15 @@ const (
 )
 
 const (
-	NoticeStateUnRead = 1
-	NoticeStatusRead  = 2
+	NoticeStateUnRead   = 1
+	NoticeStatusRead    = 2
+	NoticeStatusDeleted = 3
 )
 
 //选课的状态
 const (
 	TeachCourseStatusSelectable    = 1
 	TeachCourseStatusNonselectable = 2
-	TeachCourseStatusLearning = 3
-	TeachCourseStatusOver = 5
-
+	TeachCourseStatusLearning      = 3
+	TeachCourseStatusOver          = 5
 )

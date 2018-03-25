@@ -73,6 +73,7 @@ func RegisterHandle(app *iris.Application) {
 	UseJwt(noticeRouter)
 	noticeRouter.Put("/{id:string}", UpdateNotice)
 	noticeRouter.Get("/list", ListNotice)
+	noticeRouter.Get("/count", CountNotice)
 
 	//course
 	courseRouter := app.Party("/courses")

@@ -93,3 +93,29 @@ func UpdateNotice(notice *Notice) error {
 
 	return C(CollectionNotice).UpdateId(notice.ID, bson.M{"$set": args})
 }
+
+func CountNoticeDiffStatus(uid string) (goutil.Map, error) {
+	pipe := []bson.M{
+		{"$match": bson.M{"uid": uid}},
+		{"$group": bson.M{"_id": "$status", "count": bson.M{"$sum": 1}}},
+		{"$project": bson.M{"$status": "$_id.status", "count": 1, "_id": 0}},
+	}
+	var list []goutil.Map
+	err := C(CollectionNotice).Pipe(pipe).All(&list)
+	if err != nil {
+		return nil, err
+	}
+
+	res := goutil.Map{}
+	for _, vm := range list {
+		switch int(vm.GetInt64("status")) {
+		case NoticeStatusRead:
+			res.Set("read", vm.GetInt64("count"))
+		case NoticeStateUnRead:
+			res.Set("unread", vm.GetInt64("count"))
+		case NoticeStatusDeleted:
+			res.Set("deleted", vm.GetInt64("count"))
+		}
+	}
+	return res, nil
+}
