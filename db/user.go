@@ -131,3 +131,4 @@ func UpdateUserByIDs(ids []string, update goutil.Map) error {
 	_, err := C(CollectionUser).UpdateAll(bson.M{"_id": bson.M{"$in": ids}}, bson.M{"$set": tools.ToBsonMap(update)})
 	return err
 }
+

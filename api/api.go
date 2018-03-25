@@ -26,6 +26,7 @@ func RegisterHandle(app *iris.Application) {
 	userRouter.Post("/", AddUser)
 	userRouter.Put("/{username:string}", UpdateUser)
 	userRouter.Get("/{username:string}", GetUser)
+	userRouter.Post("/password", UpdateUserPassword)
 
 	//students
 	stuRouter := app.Party("/students")

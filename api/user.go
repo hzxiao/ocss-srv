@@ -137,3 +137,37 @@ func CallGetUser(token string, username string) (goutil.Map, error) {
 
 	return handleACallResult(result)
 }
+
+func UpdateUserPassword(ctx context.Context)  {
+	var data goutil.Map
+	err := ctx.ReadJSON(&data)
+	if err != nil {
+		WriteResultWithArgErr(ctx, err)
+		return
+	}
+
+	user, err := db.VerifyUser(data.GetString("username"), data.GetString("oldPass"))
+	if err != nil {
+		log.Error("[UpdateUserPassword] ", err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+	if user == nil {
+		WriteResultErrByMsg(ctx, CodeUserNotFound, "原密码错误", nil)
+		return
+	}
+
+	updateUser := &db.User{
+		Username: data.GetString("username"),
+		Password: data.GetString("newPass"),
+	}
+
+	err = db.UpdateUser(updateUser)
+	if err != nil {
+		log.Printf("[UpdateUserPassword] update user(%v) error(%v)", goutil.Struct2Json(updateUser), err)
+		WriteResultErrByKey(ctx, 3, "srv-err", err)
+		return
+	}
+
+	WriteResultSuccess(ctx, "OK")
+}
