@@ -150,10 +150,11 @@ type Comment struct {
 }
 
 type Notice struct {
-	ID      string     `bson:"_id" json:"id"`
-	UID     string     `bson:"uid" json:"uid"`
-	Content goutil.Map `bson:"content" json:"content"`
-	Status  int        `bson:"status" json:"status"`
-	Create  int64      `bson:"create" json:"create"`
-	Update  int64      `bson:"update" json:"update"`
+	ID      string `bson:"_id" json:"id"`
+	UID     string `bson:"uid" json:"uid"`
+	Content string `bson:"content" json:"content"`
+	Status  int    `bson:"status" json:"status"`
+	Create  int64  `bson:"create" json:"create"`
+	Update  int64  `bson:"update" json:"update"`
+	Title   string `bson:"title" json:"title"`
 }
