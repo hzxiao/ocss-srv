@@ -5,13 +5,14 @@ import (
 	"github.com/hzxiao/ocss-srv/db"
 	"github.com/kataras/iris/context"
 	log "github.com/sirupsen/logrus"
+	"fmt"
 )
 
 func ListNotice(ctx context.Context) {
 	argMap, err := CheckURLArg(ctx.FormValues(), []*Arg{
 		{Key: "status", Type: "int"},
-		{Key: "page", Type: "int", DefaultValue: "1"},
-		{Key: "pageSize", Type: "int", DefaultValue: "20"},
+		{Key: "page", Type: "int", DefaultValue: "0"},
+		{Key: "pageSize", Type: "int", DefaultValue: "200"},
 		{Key: "sort", Type: "string"},
 	})
 	if err != nil {
@@ -60,7 +61,7 @@ func UpdateNotice(ctx context.Context) {
 }
 
 func CountNotice(ctx context.Context) {
-	uid := ctx.Values().GetString("uid")
+	uid := fmt.Sprintf("%v", ctx.Values().Get("uid"))
 	res, err := db.CountNoticeDiffStatus(uid)
 	if err != nil {
 		log.Errorf("[CountNotice] get by(%v) error(%v)", uid, err)
