@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/hzxiao/goutil"
 	"github.com/hzxiao/ocss-srv/db"
+	"github.com/juju/errors"
 	"github.com/kataras/iris/context"
 	log "github.com/sirupsen/logrus"
 	"strings"
@@ -92,7 +93,7 @@ func ListTeachCourse(ctx context.Context) {
 		return
 	}
 	var cids, tids []string
-	if HasOneOfKeys(argMap, "name", "deptId", "nature") {
+	if HasOneOfKeys(argMap, "name", "deptId", "nature", "attr") {
 		crsExactMap := TakeByReplaceKeys(argMap, goutil.Map{"deptId": "dept.id", "nature": "nature", "attr": "attr"})
 		crsExactMap.Set("status", db.CourseStatusChecking)
 		crsFuzzyMap := TakeByKeys(argMap, "name")
@@ -215,4 +216,126 @@ func DeleteTeachCourse(ctx context.Context) {
 	WriteResultSuccess(ctx, goutil.Map{
 		"ids": ids,
 	})
+}
+
+func ListStudentCourse(ctx context.Context) {
+	argMap, err := CheckURLArg(ctx.FormValues(), []*Arg{
+		{Key: "name", Type: "string"},
+		{Key: "selectState", Type: "int"},
+		{Key: "page", Type: "int", DefaultValue: "0"},
+		{Key: "pageSize", Type: "int", DefaultValue: "20"},
+		{Key: "sort", Type: "string"},
+	})
+	if err != nil {
+		WriteResultWithArgErr(ctx, err)
+		return
+	}
+	var cids, tids []string
+	if HasOneOfKeys(argMap, "name") {
+		crsExactMap := goutil.Map{}
+		crsExactMap.Set("status", db.CourseStatusChecking)
+		crsFuzzyMap := TakeByKeys(argMap, "name")
+		crs, _, err := db.ListCourse(crsExactMap, crsFuzzyMap, nil, 0, 0)
+		if err != nil {
+			log.Errorf("[ListStudentCourse] error(%v)", err)
+			WriteResultWithSrvErr(ctx, err)
+			return
+		}
+		for i := range crs {
+			cids = append(cids, crs[i].ID)
+		}
+		if !argMap.Exist("name") && len(cids) == 0 {
+			WriteResultSuccess(ctx, goutil.Map{
+				"tcList": nil,
+				"total":  0,
+			})
+			return
+		}
+	}
+
+	limit := int(argMap.GetInt64("pageSize"))
+	skip := int(argMap.GetInt64("page")) * limit
+	var sort []string
+	if argMap.Exist("sort") {
+		sort = append(sort, argMap.GetString("sort"))
+	}
+
+	selectState := int(argMap.GetInt64("selectState"))
+	sid := ctx.Values().GetString("uid")
+	tcs, total, err := db.ListStudentCourse(selectState, sid, sort, skip, limit)
+	if err != nil {
+		log.Errorf("[ListStudentCourse] error(%v)", err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+
+	cids, tids = nil, nil
+	for i := range tcs {
+		cids = append(cids, tcs[i].CID)
+		tids = append(tids, tcs[i].TID)
+	}
+	crsList, err := db.ListCourseByIds(cids)
+	if err != nil {
+		log.Errorf("[ListStudentCourse] error(%v)", err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+	teList, err := db.ListTeacherByIds(tids)
+	if err != nil {
+		log.Errorf("[ListStudentCourse] error(%v)", err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+	var tcList []goutil.Map
+	for i := range tcs {
+		tc := goutil.Struct2Map(tcs[i])
+		for j := range crsList {
+			if crsList[j].ID == tcs[i].CID {
+				tc.Set("courseName", crsList[j].Name)
+				if crsList[j].Dept != nil {
+					tc.Set("deptName", crsList[j].Dept.GetString("name"))
+					tc.Set("nature", crsList[j].Nature)
+					tc.Set("attr", crsList[j].Attr)
+				}
+				break
+			}
+		}
+		for k := range teList {
+			if teList[k].ID == tcs[i].TID {
+				tc.Set("teacherName", teList[k].Name)
+			}
+		}
+		tcList = append(tcList, tc)
+	}
+
+	WriteResultSuccess(ctx, goutil.Map{
+		"tcList": tcList,
+		"total":  total,
+	})
+}
+
+func StuSelectCourse(ctx context.Context) {
+	var data goutil.Map
+	err := ctx.ReadJSON(&data)
+	if err != nil {
+		WriteResultWithArgErr(ctx, err)
+		return
+	}
+
+	sid := ctx.Values().GetString("uid")
+	switch data.GetString("method") {
+	case "select":
+		err = db.StuSelectCourse(data.GetStringArray("ids"), sid)
+	case "cancel":
+		err = db.StuCancelCourse(data.GetStringArray("ids"), sid)
+	default:
+		WriteResultWithArgErr(ctx, errors.New("unknown method"))
+		return
+	}
+	if err != nil {
+		log.Errorf("[StuSelectCourse] error(%v)", err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+	WriteResultSuccess(ctx, "OK")
 }
