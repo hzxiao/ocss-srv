@@ -72,6 +72,12 @@ func ListTeachCourses(status int, selectState int, cids, tids []string, sort []s
 	return teachCourseList, total, nil
 }
 
+func LoadTeachCourse(id string) (*TeachCourse, error) {
+	var tc TeachCourse
+	err := one(CollectionTeachCourse, bson.M{"_id": id}, nil, &tc)
+	return &tc, err
+}
+
 func UpdateTeachCourseByIDs(ids []string, tc *TeachCourse) (err error) {
 	if len(ids) == 0 {
 		return nil
@@ -399,4 +405,3 @@ func ListStudentCourse(selectState int, sid string, sort []string, skip, limit i
 	}
 	return teachCourseList, total, nil
 }
-

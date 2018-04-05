@@ -339,3 +339,94 @@ func StuSelectCourse(ctx context.Context) {
 	}
 	WriteResultSuccess(ctx, "OK")
 }
+
+func GetTeachCourse(ctx context.Context) {
+	id := ctx.Params().Get("id")
+	tc, err := db.LoadTeachCourse(id)
+	if err != nil {
+		log.Errorf("[GetTeachCourse] error(%v)", err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+
+	course, err := db.LoadCourse(tc.CID)
+	if err != nil {
+		log.Errorf("[GetTeachCourse] error(%v)", err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+
+	teacher, err := db.LoadTeacher(tc.TID)
+	if err != nil {
+		log.Errorf("[GetTeachCourse] error(%v)", err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+	WriteResultSuccess(ctx, goutil.Map{
+		"tc":      tc,
+		"course":  course,
+		"teacher": teacher,
+	})
+}
+
+func ListStudentOfCourse(ctx context.Context) {
+	id := ctx.Params().Get("id")
+	tc, err := db.LoadTeachCourse(id)
+	if err != nil {
+		log.Errorf("[ListStudentOfCourse] error(%v)", err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+
+	var sids []string
+	for _, item := range tc.StuInfo {
+		sids = append(sids, item.GetString("sid"))
+	}
+
+	students, err := db.ListStudentByIds(sids)
+	if err != nil {
+		log.Errorf("[ListStudentOfCourse] error(%v)", err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+
+	var studentList []goutil.Map
+	for _, s := range students {
+		stu := goutil.Struct2Map(s)
+		for _, item := range tc.StuInfo {
+			stu.Set("selectTime", item.Get("create"))
+			stu.Set("grade", item.Get("grade"))
+		}
+		studentList = append(studentList, stu)
+	}
+
+	WriteResultSuccess(ctx, goutil.Map{
+		"tc":      tc,
+		"studentList":  studentList,
+	})
+}
+
+func UpdateStudentForTc(ctx context.Context)  {
+	var data goutil.Map
+	err := ctx.ReadJSON(&data)
+	if err != nil {
+		WriteResultWithArgErr(ctx, err)
+		return
+	}
+
+	switch data.GetString("method") {
+	case "select":
+		err = db.StuSelectCourse([]string{data.GetString("id")}, data.GetString("sid"))
+	case "cancel":
+		err = db.StuCancelCourse([]string{data.GetString("id")}, data.GetString("sid"))
+	default:
+		WriteResultWithArgErr(ctx, errors.New("unknown method"))
+		return
+	}
+	if err != nil {
+		log.Errorf("[UpdateStudentForTc] error(%v)", err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+	WriteResultSuccess(ctx, "OK")
+}
