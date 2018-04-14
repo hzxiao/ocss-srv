@@ -7,6 +7,7 @@ import (
 	"github.com/juju/errors"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	log"github.com/sirupsen/logrus"
 )
 
 func AddTeachCourse(tc *TeachCourse) error {
@@ -467,13 +468,16 @@ func NotifyTcFull2Adm(ids []string) error {
 		return err
 	}
 
+	log.Info("NotifyTcFull2Adm: ", goutil.Struct2Map(tcList))
 	for i := range tcList {
 		crs, err := LoadCourse(tcList[i].CID)
 		if err != nil {
+			log.Error(err)
 			return err
 		}
 		tea, err := LoadTeacher(tcList[i].TID)
 		if err != nil {
+			log.Error(err)
 			return err
 		}
 
