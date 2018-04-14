@@ -132,3 +132,11 @@ func UpdateUserByIDs(ids []string, update goutil.Map) error {
 	return err
 }
 
+func ListUserByRole(role int) ([]*User, error)  {
+	var userList []*User
+	_, err := list(CollectionUser, bson.M{"role": role}, nil,nil, 0, 0, &userList)
+	if err != nil {
+		return nil, err
+	}
+	return userList, nil
+}

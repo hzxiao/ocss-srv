@@ -19,6 +19,11 @@ func AddTeachCourse(tc *TeachCourse) error {
 	if tc.TID == "" {
 		return errors.New("tid is empty")
 	}
+
+	err := isTcConflict(tc)
+	if err != nil {
+		return err
+	}
 	if tc.Capacity == 0 {
 		tc.Capacity = 50
 	}
@@ -42,28 +47,34 @@ func AddTeachCourse(tc *TeachCourse) error {
 	return nil
 }
 
-//func isTcConflict(tc *TeachCourse) error {
-//	var tcList []*TeachCourse
-//	finder := bson.M{
-//		"tid": tc.TID,
-//		"cid": tc.CID,
-//		"schoolYear": tc.SchoolYear,
-//		"term": tc.Term,
-//	}
-//	_, err := list(CollectionTeachCourse, finder, nil, nil, 0, 0, &tcList)
-//	if err != nil {
-//		return err
-//	}
-//
-//	secs := tc.TakeTime.GetInt64Array("sections")
-//	for _, c := range tcList {
-//		if c.TakeTime == nil {
-//			continue
-//		}
-//
-//		for
-//	}
-//}
+func isTcConflict(tc *TeachCourse) error {
+	var tcList []*TeachCourse
+	finder := bson.M{
+		"tid": tc.TID,
+		"cid": tc.CID,
+		"schoolYear": tc.SchoolYear,
+		"term": tc.Term,
+	}
+	_, err := list(CollectionTeachCourse, finder, nil, nil, 0, 0, &tcList)
+	if err != nil {
+		return err
+	}
+
+	secs := tc.TakeTime.Sections
+	for _, c := range tcList {
+		if c.TakeTime == nil {
+			continue
+		}
+
+		for i := range c.TakeTime.Sections {
+			if hasSameValue(secs[i], c.TakeTime.Sections[i]) {
+				return errors.New("time conflict")
+			}
+		}
+	}
+
+	return nil
+}
 
 func hasSameValue(x, y []int64) bool {
 	for i := range x {
@@ -443,4 +454,38 @@ func ListStudentCourse(selectState int, sid string, sort []string, skip, limit i
 		return nil, 0, err
 	}
 	return teachCourseList, total, nil
+}
+
+func NotifyTcFull2Adm(ids []string) error {
+	var tcList []*TeachCourse
+	finder := bson.M{
+		"id": bson.M{"$in": ids},
+		"margin": 0,
+	}
+	_, err := list(CollectionTeachCourse, finder, nil, nil, 0, 0, &tcList)
+	if err != nil {
+		return err
+	}
+
+	for i := range tcList {
+		crs, err := LoadCourse(tcList[i].CID)
+		if err != nil {
+			return err
+		}
+		tea, err := LoadTeacher(tcList[i].TID)
+		if err != nil {
+			return err
+		}
+
+		title := fmt.Sprintf("%v选满啦！！！", crs.Name)
+		content := fmt.Sprintf("课程代码：%v，任课老师：%v，课程名称：%v 已被选满",
+			crs.ID, tea.Name, crs.Name)
+
+		SendNotice(RoleAdmin, goutil.Map{
+			"title": title,
+			"content": content,
+		})
+	}
+
+	return nil
 }

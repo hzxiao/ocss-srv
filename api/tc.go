@@ -23,6 +23,9 @@ func AddTeachCourse(ctx context.Context) {
 		if strings.Contains(err.Error(), "already exists") {
 			WriteResultErrByMsg(ctx, CodeAlreadyExists, "课程号已存在", err)
 			return
+		} else if strings.Contains(err.Error(), "time conflict") {
+			WriteResultErrByMsg(ctx, CodeAlreadyExists, "存在课程与教师与该选课时间冲突的选课", err)
+			return
 		}
 		WriteResultWithSrvErr(ctx, err)
 		return
@@ -337,6 +340,7 @@ func StuSelectCourse(ctx context.Context) {
 		WriteResultWithSrvErr(ctx, err)
 		return
 	}
+	go db.NotifyTcFull2Adm(data.GetStringArray("ids"))
 	WriteResultSuccess(ctx, "OK")
 }
 
@@ -428,5 +432,7 @@ func UpdateStudentForTc(ctx context.Context)  {
 		WriteResultWithSrvErr(ctx, err)
 		return
 	}
+	go db.NotifyTcFull2Adm([]string{data.GetString("id")})
+
 	WriteResultSuccess(ctx, "OK")
 }

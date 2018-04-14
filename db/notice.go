@@ -4,6 +4,7 @@ import (
 	"github.com/hzxiao/goutil"
 	"github.com/hzxiao/ocss-srv/tools"
 	"github.com/juju/errors"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -36,7 +37,25 @@ func receiveNotice() {
 	for {
 		select {
 		case msg := <-AdminNoticeChan:
-			_ = msg
+			//finder admin
+			adminList, err := ListUserByRole(RoleAdmin)
+			if err != nil {
+				log.Error(err)
+				break
+			}
+			var ns []*Notice
+			for i := range adminList {
+				ns = append(ns, &Notice{
+					UID:     adminList[i].ID,
+					Content: msg.GetString("content"),
+					Title:   msg.GetString("title"),
+				})
+			}
+			err = AddNotice(ns...)
+			if err != nil {
+				log.Error(err)
+				break
+			}
 		case msg := <-TeacherNoticeChan:
 			_ = msg
 
