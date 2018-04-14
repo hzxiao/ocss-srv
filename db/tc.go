@@ -458,7 +458,7 @@ func ListStudentCourse(selectState int, sid string, sort []string, skip, limit i
 }
 
 func NotifyTcFull2Adm(ids []string) error {
-	log.Info("NotifyTcFull2Adm: ids=", goutil.Struct2Map(ids))
+	log.Info("NotifyTcFull2Adm: ids=", goutil.Struct2Json(ids))
 	var tcList []*TeachCourse
 	finder := bson.M{
 		"_id":    bson.M{"$in": ids},
