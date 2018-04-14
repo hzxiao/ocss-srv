@@ -77,14 +77,16 @@ type Course struct {
 
 //授课
 type TeachCourse struct {
-	ID  string `bson:"_id" json:"id"`
-	CID string `bson:"cid" json:"cid"` //course id
-	TID string `bson:"tid" json:"tid"` //teacher id
+	ID         string `bson:"_id" json:"id"`
+	CID        string `bson:"cid" json:"cid"`               //course id
+	TID        string `bson:"tid" json:"tid"`               //teacher id
+	SchoolYear string `bson:"schoolYear" json:"schoolYear"` //学年
+	Term       int    `bson:"term" json:"term"`             //学期
 	//{
 	//	"dayOfWeek": "一",
 	//	"sections": [1, 2]
 	//	}
-	TakeTime goutil.Map `bson:"takeTime" json:"takeTime"` //上课时间
+	TakeTime *TakeTime `bson:"takeTime" json:"takeTime"` //上课时间
 	//	{
 	//			"startWeek": 12,
 	//			"endWeek": 18,
@@ -109,6 +111,11 @@ type TeachCourse struct {
 	//	"update": 12222222
 	//}
 	StuInfo []goutil.Map `bson:"stuInfo" json:"stuInfo"`
+}
+
+type TakeTime struct {
+	DayOfWeek []string  `bson:"dayOfWeek" json:"dayOfWeek"`
+	Sections  [][]int64 `bson:"sections" json:"sections"`
 }
 
 type CourseResource struct {

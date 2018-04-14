@@ -96,7 +96,6 @@ func RegisterHandle(app *iris.Application) {
 	tcRouter.Get("/{id:string}", GetTeachCourse)
 	tcRouter.Get("/stu/list/{id:string}", ListStudentOfCourse)
 	tcRouter.Post("/stu/update", UpdateStudentForTc)
-
 }
 
 func UseJwt(partys ...router.Party) {

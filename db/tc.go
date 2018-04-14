@@ -42,6 +42,40 @@ func AddTeachCourse(tc *TeachCourse) error {
 	return nil
 }
 
+//func isTcConflict(tc *TeachCourse) error {
+//	var tcList []*TeachCourse
+//	finder := bson.M{
+//		"tid": tc.TID,
+//		"cid": tc.CID,
+//		"schoolYear": tc.SchoolYear,
+//		"term": tc.Term,
+//	}
+//	_, err := list(CollectionTeachCourse, finder, nil, nil, 0, 0, &tcList)
+//	if err != nil {
+//		return err
+//	}
+//
+//	secs := tc.TakeTime.GetInt64Array("sections")
+//	for _, c := range tcList {
+//		if c.TakeTime == nil {
+//			continue
+//		}
+//
+//		for
+//	}
+//}
+
+func hasSameValue(x, y []int64) bool {
+	for i := range x {
+		for j := range y {
+			if x[i] == y[j] {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func ListTeachCourses(status int, selectState int, cids, tids []string, sort []string, skip, limit int) ([]*TeachCourse, int, error) {
 	finder := bson.M{}
 	if status > 0 {
@@ -102,7 +136,7 @@ func UpdateTeachCourseByIDs(ids []string, tc *TeachCourse) (err error) {
 	if tc.Status > 0 {
 		args["status"] = tc.Status
 	}
-	if len(tc.TakeTime) > 0 {
+	if tc.TakeTime != nil {
 		args["takeTime"] = tc.TakeTime
 	}
 	if len(tc.TakeWeek) > 0 {
@@ -117,7 +151,12 @@ func UpdateTeachCourseByIDs(ids []string, tc *TeachCourse) (err error) {
 	if tc.EndSelectTime > 0 {
 		args["endSelectTime"] = tc.EndSelectTime
 	}
-
+	if tc.SchoolYear != "" {
+		args["schoolYear"] = tc.SchoolYear
+	}
+	if tc.Term > 0 {
+		args["term"] = tc.Term
+	}
 	args["update"] = tools.NowMillisecond()
 
 	_, err = C(CollectionTeachCourse).UpdateAll(finder, bson.M{"$set": args})
