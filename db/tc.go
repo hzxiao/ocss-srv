@@ -460,7 +460,7 @@ func ListStudentCourse(selectState int, sid string, sort []string, skip, limit i
 func NotifyTcFull2Adm(ids []string) error {
 	var tcList []*TeachCourse
 	finder := bson.M{
-		"id": bson.M{"$in": ids},
+		"_id": bson.M{"$in": ids},
 		"margin": 0,
 	}
 	_, err := list(CollectionTeachCourse, finder, nil, nil, 0, 0, &tcList)
