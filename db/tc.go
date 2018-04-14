@@ -5,9 +5,9 @@ import (
 	"github.com/hzxiao/goutil"
 	"github.com/hzxiao/ocss-srv/tools"
 	"github.com/juju/errors"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	log"github.com/sirupsen/logrus"
 )
 
 func AddTeachCourse(tc *TeachCourse) error {
@@ -51,10 +51,10 @@ func AddTeachCourse(tc *TeachCourse) error {
 func isTcConflict(tc *TeachCourse) error {
 	var tcList []*TeachCourse
 	finder := bson.M{
-		"tid": tc.TID,
-		"cid": tc.CID,
+		"tid":        tc.TID,
+		"cid":        tc.CID,
 		"schoolYear": tc.SchoolYear,
-		"term": tc.Term,
+		"term":       tc.Term,
 	}
 	_, err := list(CollectionTeachCourse, finder, nil, nil, 0, 0, &tcList)
 	if err != nil {
@@ -458,9 +458,10 @@ func ListStudentCourse(selectState int, sid string, sort []string, skip, limit i
 }
 
 func NotifyTcFull2Adm(ids []string) error {
+	log.Info("NotifyTcFull2Adm: ids=", goutil.Struct2Map(ids))
 	var tcList []*TeachCourse
 	finder := bson.M{
-		"_id": bson.M{"$in": ids},
+		"_id":    bson.M{"$in": ids},
 		"margin": 0,
 	}
 	_, err := list(CollectionTeachCourse, finder, nil, nil, 0, 0, &tcList)
@@ -468,7 +469,7 @@ func NotifyTcFull2Adm(ids []string) error {
 		return err
 	}
 
-	log.Info("NotifyTcFull2Adm: ", goutil.Struct2Map(tcList))
+	log.Info("NotifyTcFull2Adm: ", tcList)
 	for i := range tcList {
 		crs, err := LoadCourse(tcList[i].CID)
 		if err != nil {
@@ -486,7 +487,7 @@ func NotifyTcFull2Adm(ids []string) error {
 			crs.ID, tea.Name, crs.Name)
 
 		SendNotice(RoleAdmin, goutil.Map{
-			"title": title,
+			"title":   title,
 			"content": content,
 		})
 	}
