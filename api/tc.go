@@ -90,6 +90,7 @@ func ListTeachCourse(ctx context.Context) {
 		{Key: "page", Type: "int", DefaultValue: "0"},
 		{Key: "pageSize", Type: "int", DefaultValue: "20"},
 		{Key: "sort", Type: "string"},
+		{Key: "tid", Type: "string"},
 	})
 	if err != nil {
 		WriteResultWithArgErr(ctx, err)
@@ -109,6 +110,7 @@ func ListTeachCourse(ctx context.Context) {
 		for i := range crs {
 			cids = append(cids, crs[i].ID)
 		}
+
 		if !argMap.Exist("name") && len(cids) == 0 {
 			WriteResultSuccess(ctx, goutil.Map{
 				"tcList": nil,
@@ -129,6 +131,7 @@ func ListTeachCourse(ctx context.Context) {
 				tids = append(tids, tes[i].ID)
 			}
 		}
+
 		if len(cids) == 0 && len(tids) == 0 {
 			WriteResultSuccess(ctx, goutil.Map{
 				"tcList": nil,
@@ -144,6 +147,10 @@ func ListTeachCourse(ctx context.Context) {
 	if argMap.Exist("sort") {
 		sort = append(sort, argMap.GetString("sort"))
 	}
+	if argMap.Exist("tid") {
+		tids = nil
+		tids = append(tids, argMap.GetString("tid"))
+	}
 	status := int(argMap.GetInt64("status"))
 	selectState := int(argMap.GetInt64("selectState"))
 	tcs, total, err := db.ListTeachCourses(status, selectState, cids, tids, sort, skip, limit)
@@ -152,6 +159,7 @@ func ListTeachCourse(ctx context.Context) {
 		WriteResultWithSrvErr(ctx, err)
 		return
 	}
+	log.Printf("[ListTeachCourse] get courseList(%v) cids[%v] tids(%v)", tcs,cids, tids)
 
 	cids, tids = nil, nil
 	for i := range tcs {
@@ -238,6 +246,10 @@ func ListStudentCourse(ctx context.Context) {
 		crsExactMap := goutil.Map{}
 		crsExactMap.Set("status", db.CourseStatusChecking)
 		crsFuzzyMap := TakeByKeys(argMap, "name")
+		//crsFuzzyMap := goutil.Map{}
+		//if argMap.Exist("name") {
+		//	crsFuzzyMap.Set("name", argMap.Get("name"))
+		//}
 		crs, _, err := db.ListCourse(crsExactMap, crsFuzzyMap, nil, 0, 0)
 		if err != nil {
 			log.Errorf("[ListStudentCourse] error(%v)", err)
@@ -247,7 +259,9 @@ func ListStudentCourse(ctx context.Context) {
 		for i := range crs {
 			cids = append(cids, crs[i].ID)
 		}
-		if !argMap.Exist("name") && len(cids) == 0 {
+		log.Printf("[ListStudentCourse] get courseList(%v) cids[%v] fuzzyCondMap(%v)", crs,cids, crsFuzzyMap)
+
+		if  len(cids) == 0 {
 			WriteResultSuccess(ctx, goutil.Map{
 				"tcList": nil,
 				"total":  0,
@@ -262,10 +276,9 @@ func ListStudentCourse(ctx context.Context) {
 	if argMap.Exist("sort") {
 		sort = append(sort, argMap.GetString("sort"))
 	}
-
 	selectState := int(argMap.GetInt64("selectState"))
 	sid := ctx.Values().GetString("uid")
-	tcs, total, err := db.ListStudentCourse(selectState, sid, sort, skip, limit)
+	tcs, total, err := db.ListStudentCourse(selectState, sid, cids, sort, skip, limit)
 	if err != nil {
 		log.Errorf("[ListStudentCourse] error(%v)", err)
 		WriteResultWithSrvErr(ctx, err)
@@ -310,6 +323,7 @@ func ListStudentCourse(ctx context.Context) {
 		}
 		tcList = append(tcList, tc)
 	}
+	log.Printf("[ListStudentCourse] get tcList(%v) ", tcList)
 
 	WriteResultSuccess(ctx, goutil.Map{
 		"tcList": tcList,

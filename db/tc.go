@@ -434,7 +434,7 @@ func ListStuLearnCourse(cstatus int, sid string, sort []string, skip, limit int)
 	return teachCourseList, total, nil
 }
 
-func ListStudentCourse(selectState int, sid string, sort []string, skip, limit int) ([]*TeachCourse, int, error) {
+func ListStudentCourse(selectState int, sid string, cids []string, sort []string, skip, limit int) ([]*TeachCourse, int, error) {
 	finder := bson.M{}
 	now := tools.NowMillisecond()
 	switch selectState {
@@ -448,6 +448,9 @@ func ListStudentCourse(selectState int, sid string, sort []string, skip, limit i
 	}
 
 	finder["stuInfo.sid"] = sid
+	if len(cids) > 0 {
+		finder["cid"] = bson.M{"$in": cids}
+	}
 
 	var teachCourseList []*TeachCourse
 	total, err := list(CollectionTeachCourse, finder, nil, sort, skip, limit, &teachCourseList)
