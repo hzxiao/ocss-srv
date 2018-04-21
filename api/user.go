@@ -38,6 +38,7 @@ func Login(ctx context.Context) {
 		userMap.Set("token", NewToken(user.Username, user.Role))
 		WriteResultSuccess(ctx, goutil.Map{"user": userMap})
 	}
+	go db.NotifyTcOverSelect2Student()
 }
 
 func CallLogin(info goutil.Map) (goutil.Map, error) {

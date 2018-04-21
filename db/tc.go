@@ -417,6 +417,27 @@ func StuCancelCourse(tcids []string, sid string) error {
 	return nil
 }
 
+func StuSelectedCourse(tcids []string, sid string) error {
+	if tcids == nil || len(tcids) == 0 {
+		return errors.New("tcid is nil")
+	}
+	if sid == "" {
+		return errors.New("sid is nil")
+	}
+	update_time := tools.NowMillisecond()
+	// 已选正在选的课，即结束选课时加入我的课程
+	for i := 0; i < len(tcids); i++ {
+		_, err := C(CollectionTeachCourse).UpdateAll(bson.M{"_id": tcids[i], "status": TeachCourseStatusSelectable,
+			"stuInfo.sid": sid, "stuInfo.cstatus": SCourseStatusSelecting, "endSelectTime": bson.M{"$lt": update_time}},
+			bson.M{ "$set": bson.M{"update": update_time,"status":SCourseStatusSelected,"stuInfo.$.cstatus": TeachCourseStatusLearning}})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func ListStuLearnCourse(cstatus int, sid string, sort []string, skip, limit int) ([]*TeachCourse, int, error) {
 	if sid == "" {
 		return nil, 0, errors.New("sid is nil")
@@ -458,6 +479,81 @@ func ListStudentCourse(selectState int, sid string, cids []string, sort []string
 		return nil, 0, err
 	}
 	return teachCourseList, total, nil
+}
+
+func NotifyTcOverSelect2Student() error {
+	var tcList []*TeachCourse
+	now := tools.NowMillisecond()
+
+	finder := bson.M{
+		"endSelectTime": bson.M{"$lt": now},
+		"status": TeachCourseStatusSelectable,
+	}
+	//结束选课
+	_, err := C(CollectionTeachCourse).UpdateAll(finder,
+		bson.M{"$set": bson.M{"update": now,"status":TeachCourseStatusLearning}})
+	if err != nil {
+		return err
+	}
+
+	finder["status"] = TeachCourseStatusLearning
+	_, err = list(CollectionTeachCourse, finder, nil, nil, 0, 0, &tcList)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("NotifyTcOverSelect2Student: finder(%v) tcList(%v)",finder, tcList)
+
+	for i := range tcList {
+		crs, err := LoadCourse(tcList[i].CID)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+		tea, err := LoadTeacher(tcList[i].TID)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+
+		title := fmt.Sprintf("%vx选课结束！！！", crs.Name)
+		content := fmt.Sprintf("课程代码：%v，任课老师：%v，课程名称：%v 结束选课",
+			crs.ID, tea.Name, crs.Name)
+
+		SendNotice(RoleAdmin, goutil.Map{
+			"title":   title,
+			"content": content,
+		})
+		SendNotice(RoleTeacher, goutil.Map{
+			"title":   title,
+			"content": content,
+			"tid": tea.ID,
+		})
+		stu:=[]string{}
+		if  tcList[i].StuInfo != nil &&  len(tcList[i].StuInfo) > 0  {
+			for j:= range tcList[i].StuInfo{
+				stu = append(stu,tcList[i].StuInfo[j].GetString("sid"))
+				finder["stuInfo.cstatus"] = SCourseStatusSelecting
+				_, err = C(CollectionTeachCourse).UpdateAll(finder,
+					bson.M{ "$set": bson.M{"update": now,"stuInfo.$.cstatus": SCourseStatusSelected}})
+				if err != nil {
+					return err
+				}
+			}
+		}
+		log.Printf("NotifyTcOverSelect2Student: stu(%v)", stu)
+		if len(stu) > 0 {
+			SendNotice(RoleStudent, goutil.Map{
+				"title":   title,
+				"content": content,
+				"sid": stu,
+			})
+		}
+
+
+	}
+
+	return nil
 }
 
 func NotifyTcFull2Adm(ids []string) error {

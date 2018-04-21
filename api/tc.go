@@ -159,7 +159,6 @@ func ListTeachCourse(ctx context.Context) {
 		WriteResultWithSrvErr(ctx, err)
 		return
 	}
-	log.Printf("[ListTeachCourse] get courseList(%v) cids[%v] tids(%v)", tcs,cids, tids)
 
 	cids, tids = nil, nil
 	for i := range tcs {

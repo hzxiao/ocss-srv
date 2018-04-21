@@ -57,10 +57,37 @@ func receiveNotice() {
 				break
 			}
 		case msg := <-TeacherNoticeChan:
-			_ = msg
+			tea := msg.GetString("tid")
+
+			var ns []*Notice
+			ns = append(ns, &Notice{
+				UID:     tea,
+				Content: msg.GetString("content"),
+				Title:   msg.GetString("title"),
+			})
+			err := AddNotice(ns...)
+			if err != nil {
+				log.Error(err)
+				break
+			}
 
 		case msg := <-StudentNoticeChan:
-			_ = msg
+			stuList := msg.GetStringArray("sid")
+			var ns []*Notice
+			for i := range stuList {
+				ns = append(ns, &Notice{
+					UID:     stuList[i],
+					Content: msg.GetString("content"),
+					Title:   msg.GetString("title"),
+				})
+			}
+			log.Printf("receiveNotice: stu(%v)", stuList)
+
+			err := AddNotice(ns...)
+			if err != nil {
+				log.Error(err)
+				break
+			}
 		}
 	}
 }
