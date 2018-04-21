@@ -91,6 +91,7 @@ func RegisterHandle(app *iris.Application) {
 	tcRouter.Put("/all", UpdateTeachCourses)
 	tcRouter.Get("/list", ListTeachCourse)
 	tcRouter.Delete("/", DeleteTeachCourse)
+	tcRouter.Put("/updateGrade", SetGradeForTc)
 	tcRouter.Get("/stu/courses", ListStudentCourse)
 	tcRouter.Post("/stu/selectCourse", StuSelectCourse)
 	tcRouter.Get("/{id:string}", GetTeachCourse)

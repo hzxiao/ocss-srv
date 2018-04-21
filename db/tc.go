@@ -88,10 +88,13 @@ func hasSameValue(x, y []int64) bool {
 	return false
 }
 
-func ListTeachCourses(status int, selectState int, cids, tids []string, sort []string, skip, limit int) ([]*TeachCourse, int, error) {
+func ListTeachCourses(status int, selectState int, tcids,cids, tids []string, sort []string, skip, limit int) ([]*TeachCourse, int, error) {
 	finder := bson.M{}
 	if status > 0 {
 		finder["status"] = status
+	}
+	if len(tcids) > 0 {
+		finder["_id"] = bson.M{"$in": tcids}
 	}
 	now := tools.NowMillisecond()
 	switch selectState {
@@ -123,6 +126,7 @@ func LoadTeachCourse(id string) (*TeachCourse, error) {
 	err := one(CollectionTeachCourse, bson.M{"_id": id}, nil, &tc)
 	return &tc, err
 }
+
 
 func UpdateTeachCourseByIDs(ids []string, tc *TeachCourse) (err error) {
 	if len(ids) == 0 {
@@ -256,33 +260,32 @@ func TeaSettingGrade(tcid string, info []goutil.Map) error {
 	if info == nil || len(info) == 0 {
 		return errors.New("grade info is nil")
 	}
-	var sids []string
+	sids:= []string{}
 	var stuInfo goutil.Map = goutil.Map{}
 	finder := bson.M{"_id": tcid}
 	update_time := tools.NowMillisecond()
 	for _, v := range info {
 		sids = append(sids, v.GetStringP("sid"))
 		sin := goutil.Map{}
-		if v.GetFloat64P("grade") > 0 {
+		if v.Get("grade") != nil {
 			finder["stuInfo.cstatus"] = SCourseStatusSelected
 			finder["status"] = TeachCourseStatusLearning
 			sin.Set("stuInfo.$.grade", v.GetFloat64P("grade"))
 		}
-		if v.GetFloat64P("ordinaryGrade") > 0 {
+		if v.Get("ordinaryGrade") != nil{
 			finder["stuInfo.cstatus"] = SCourseStatusSelected
 			finder["status"] = TeachCourseStatusLearning
 			sin.Set("stuInfo.$.ordinaryGrade", v.GetFloat64P("ordinaryGrade"))
 		}
-		if v.GetFloat64P("examGrade") > 0 {
+		if v.Get("examGrade") != nil{
 			finder["stuInfo.cstatus"] = SCourseStatusSelected
 			finder["status"] = TeachCourseStatusLearning
 			sin.Set("stuInfo.$.examGrade", v.GetFloat64P("examGrade"))
 		}
-		if v.GetFloat64P("cstatus") > 0 {
+		if v.Get("cstatus") != nil{
 			sin.Set("stuInfo.$.cstatus", v.GetInt64P("cstatus"))
 		}
 		sin.Set("stuInfo.$.update", update_time)
-
 		stuInfo.Set(v.GetStringP("sid"), sin)
 	}
 	//finder["stuInfo.sid"] = bson.M{"$in":sids}
@@ -318,11 +321,13 @@ func TeaSettingGrade(tcid string, info []goutil.Map) error {
 	}
 
 	changeI := bson.M{}
-	for _, v := range teachCourseList[0].StuInfo {
+	//log.Printf("[TeaSettingGrade] info(%v)  changeStuInfo(%v)", info, stuInfo)
+
+	for _, v := range info {
 		changeI = tools.ToBsonMap(stuInfo.GetMapP(v.GetStringP("sid")))
 		changeI["update"] = update_time
 		finder["stuInfo.sid"] = v.GetStringP("sid")
-		fmt.Println("finder,", goutil.Struct2Json(finder), ";change", goutil.Struct2Json(changeI))
+		log.Printf("[TeaSettingGrade] finder(%v) change(%v)", finder,changeI)
 		_, err = C(CollectionTeachCourse).UpdateAll(finder,
 			bson.M{"$set": changeI})
 	}
