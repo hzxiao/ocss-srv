@@ -6,6 +6,7 @@ import (
 	"github.com/kataras/iris/context"
 	log "github.com/sirupsen/logrus"
 	"strconv"
+	"github.com/kataras/iris/core/errors"
 )
 
 func AddComment(ctx context.Context) {
@@ -76,12 +77,88 @@ func ListComment(ctx context.Context) {
 		WriteResultWithSrvErr(ctx, err)
 		return
 	}
+
+	if commentList == nil || len(commentList) == 0 {
+		WriteResultSuccess(ctx, goutil.Map{
+			"commentList": nil,
+			"total":       0,
+		})
+	}
+
+	var cmtList []goutil.Map
+
+	for i := range commentList {
+		cmt := goutil.Struct2Map(commentList[i])
+		uid := commentList[i].UID
+		role := commentList[i].Role
+		userInfo,err := GetUserInfoForComment(goutil.Map{"role":role,"uid":uid})
+		if err != nil {
+			log.Errorf("[ListComment] get by(%v) error(%v)", argMap, err)
+			WriteResultWithSrvErr(ctx, err)
+			return
+		}
+		cmt.Set("role", userInfo.GetString("role"))
+		cmt.Set("name", userInfo.GetString("name"))
+		if commentList[i].Children != nil && len(commentList[i].Children) > 0{
+			children := commentList[i].Children
+			for j := range children {
+				uid := children[j].GetString("uid")
+				role := children[j].GetInt64("role")
+				userInfo,err := GetUserInfoForComment(goutil.Map{"role":role,"uid":uid})
+				if err != nil {
+					log.Errorf("[ListComment] get by(%v) error(%v)", argMap, err)
+					WriteResultWithSrvErr(ctx, err)
+					return
+				}
+				children[j].Set("role", userInfo.GetString("role"))
+				children[j].Set("name", userInfo.GetString("name"))
+			}
+			cmt.Set("children", children)
+		}
+		cmtList = append(cmtList,cmt)
+
+	}
+	log.Printf("[ListComment] by argMap(%)  get cmtList(%v) ", argMap, cmtList)
+
 	WriteResultSuccess(ctx, goutil.Map{
-		"commentList": commentList,
+		"commentList": cmtList,
 		"total":       total,
 	})
 }
-
+// 根据角色获取用户信息
+func GetUserInfoForComment(userParam goutil.Map)(goutil.Map, error)  {
+	userInfo:=goutil.Map{}
+	uid := userParam.GetString("uid")
+	switch userParam.GetInt64("role") {
+	case 1:
+		userInfo.Set("role", AdminCN)
+		userInfo.Set("name", AdminCN)
+		break
+	case 2:
+		teacher,err := db.LoadTeacher(uid)
+		if err != nil {
+			log.Errorf("[GetUserInfoForComment] get by(%v) error(%v)", userParam, err)
+			return nil,err
+		}
+		if teacher != nil {
+			userInfo.Set("name", teacher.Name)
+		}
+		userInfo.Set("role", TeacherCN)
+		break
+	case 3:
+		student,err := db.LoadStudent(uid)
+		if err != nil {
+			log.Errorf("[GetUserInfoForComment] get by(%v) error(%v)", userParam, err)
+			return nil,err
+		}
+		if student != nil {
+			userInfo.Set("name", student.Name)
+		}
+		userInfo.Set("role", StudentCN)
+		break
+	}
+	return userInfo,nil
+}
 func AddChildComment(ctx context.Context) {
 	id := ctx.Params().Get("id")
 	var child goutil.Map
@@ -90,7 +167,19 @@ func AddChildComment(ctx context.Context) {
 		WriteResultWithArgErr(ctx, err)
 		return
 	}
-
+	if len(child) == 0 {
+		log.Errorf("[AddChildComment] add child comment(%v) child(%v) error(%v)", id, goutil.Struct2Json(child), err)
+		WriteResultWithSrvErr(ctx, errors.New("child is empty"))
+		return
+	}
+	child.Set("uid", ctx.Values().GetString("uid"))
+	role, err := ctx.Values().GetFloat64("role")
+	if err != nil {
+		log.Errorf("[AddComment] get role uid(%v) error(%v)", ctx.Values().GetString("uid"), err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+	child.Set("role", int(role))
 	c, err := db.UpdateChildComment(id, "add", child)
 	if err != nil {
 		log.Errorf("[AddChildComment] add child comment(%v) child(%v) error(%v)", id, goutil.Struct2Json(child), err)

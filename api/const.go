@@ -11,3 +11,9 @@ const (
 	CodeAlreadyExists
 	CodeCourseNotFound
 )
+
+const (
+	AdminCN = "管理员"
+	TeacherCN = "教师"
+	StudentCN = "学生"
+)

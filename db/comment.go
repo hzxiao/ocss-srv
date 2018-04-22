@@ -26,7 +26,7 @@ func AddComment(c *Comment) error {
 
 func ListComment(cond goutil.Map, sort []string, skip, limit int) ([]*Comment, int, error) {
 	var commentList []*Comment
-	total, err := list(CollectionStudent, tools.ToBsonMap(cond), nil, sort, skip, limit, &commentList)
+	total, err := list(CollectionComment, tools.ToBsonMap(cond), nil, sort, skip, limit, &commentList)
 	if err != nil {
 		return nil, 0, err
 	}
