@@ -99,6 +99,7 @@ func ListComment(ctx context.Context) {
 		}
 		cmt.Set("role", userInfo.GetString("role"))
 		cmt.Set("name", userInfo.GetString("name"))
+		cmt.Set("childTotal", 0)
 		if commentList[i].Children != nil && len(commentList[i].Children) > 0{
 			children := commentList[i].Children
 			for j := range children {
@@ -114,6 +115,7 @@ func ListComment(ctx context.Context) {
 				children[j].Set("name", userInfo.GetString("name"))
 			}
 			cmt.Set("children", children)
+			cmt.Set("childTotal", len(children))
 		}
 		cmtList = append(cmtList,cmt)
 
