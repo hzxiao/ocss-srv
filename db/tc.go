@@ -88,7 +88,7 @@ func hasSameValue(x, y []int64) bool {
 	return false
 }
 
-func ListTeachCourses(status int, selectState int, tcids,cids, tids []string, sort []string, skip, limit int) ([]*TeachCourse, int, error) {
+func ListTeachCourses(status int, selectState int, tcids,cids, tids,sids []string, sort []string, skip, limit int) ([]*TeachCourse, int, error) {
 	finder := bson.M{}
 	if status > 0 {
 		finder["status"] = status
@@ -111,6 +111,9 @@ func ListTeachCourses(status int, selectState int, tcids,cids, tids []string, so
 	}
 	if len(tids) > 0 {
 		finder["tid"] = bson.M{"$in": tids}
+	}
+	if len(sids) > 0 {
+		finder["stuInfo.sid"] = bson.M{"$in": sids}
 	}
 	var teachCourseList []*TeachCourse
 	total, err := list(CollectionTeachCourse, finder, nil, sort, skip, limit, &teachCourseList)
