@@ -115,6 +115,12 @@ func AddCourseResource(ctx context.Context) {
 		WriteResultWithSrvErr(ctx, err)
 		return
 	}
+	err = db.NotifyResourceToStudent(r)
+	if err != nil {
+		log.Errorf("[AddCourseResource] notice resource(%v) error(%v)", goutil.Struct2Json(r), err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
 
 	WriteResultSuccess(ctx, goutil.Map{
 		"resource": r,
@@ -224,3 +230,5 @@ func GetCourseResource(ctx context.Context) {
 		"total":        total,
 	})
 }
+
+

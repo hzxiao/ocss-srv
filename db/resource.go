@@ -5,6 +5,8 @@ import (
 	"github.com/hzxiao/ocss-srv/tools"
 	"github.com/juju/errors"
 	"gopkg.in/mgo.v2/bson"
+	"fmt"
+	log "github.com/sirupsen/logrus"
 )
 
 func AddFile(file *File) error {
@@ -44,6 +46,44 @@ func AddResource(r *CourseResource) error {
 	r.Update = r.Create
 	r.Status = StatusNormal
 	return C(CollectionResource).Insert(r)
+}
+
+func NotifyResourceToStudent(r CourseResource) error {
+	log.Info("NotifyResourceToStudent: id=", r)
+	teacher, err := LoadTeacher(r.TID)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	tc, err := LoadTeachCourse(r.TCID)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	crs, err := LoadCourse(tc.CID)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	title := fmt.Sprintf("%v在%v这门课程上传了课件！！！", teacher.Name, crs.Name)
+	content := fmt.Sprintf("任课教师：%v，课程名称：%v，课件名称：%v",
+		teacher.Name,  crs.Name, r.File.Name)
+	stu := []string{}
+	if tc.StuInfo != nil &&  len(tc.StuInfo) > 0 {
+		for j := range tc.StuInfo {
+			stu = append(stu, tc.StuInfo[j].GetString("sid"))
+		}
+	}
+	log.Info("NotifyTcOverSelect2Student: stu(%v)", stu)
+	if len(stu) > 0 {
+		SendNotice(RoleStudent, goutil.Map{
+			"title":   title,
+			"content": content,
+			"sid": stu,
+		})
+	}
+
+	return nil
 }
 
 func DelCourseResource(tid, tcid string, rids []string) error {

@@ -663,10 +663,31 @@ func GetTeachCourse(ctx context.Context) {
 		WriteResultWithSrvErr(ctx, err)
 		return
 	}
+
+	//判断用户角色，如果用户学生则列出该学生的具体信息
+	uid := ctx.Values().GetString("uid")
+	role, err := ctx.Values().GetFloat64("role")
+	if err != nil {
+		log.Errorf("[GetTeachCourse] get role uid(%v) error(%v)", uid, err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+	var student *db.Student
+	if role == 3{
+		student, err = db.LoadStudent(uid)
+		if err != nil {
+			log.Errorf("[GetTeachCourse] get student uid(%v) error(%v)", uid, err)
+			WriteResultWithSrvErr(ctx, err)
+			return
+		}
+	}
+
+
 	WriteResultSuccess(ctx, goutil.Map{
 		"tc":      tc,
 		"course":  course,
 		"teacher": teacher,
+		"student": student,
 	})
 }
 
