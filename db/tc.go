@@ -291,22 +291,43 @@ func TeaSettingGrade(tcid string, info []goutil.Map) error {
 		sin.Set("stuInfo.$.update", update_time)
 		stuInfo.Set(v.GetStringP("sid"), sin)
 	}
-	//finder["stuInfo.sid"] = bson.M{"$in":sids}
-	//fmt.Println(tools.Struct2BsonMap(stuInfo))
+
 	//先查
-	var teachCourseList []*TeachCourse
-	total, err := list(CollectionTeachCourse, finder, bson.M{"stuInfo": 1}, nil, 0, 0, &teachCourseList)
-	if err != nil {
-		return err
-	}
-	if total == 0 || teachCourseList == nil || teachCourseList[0].StuInfo == nil || len(teachCourseList[0].StuInfo) < len(sids) {
-		return errors.New(fmt.Sprintf("One or more student is not in this learn course(%v)", goutil.Struct2Json(teachCourseList)))
+
+	//var teachCourseList []*TeachCourse
+	//total, err := list(CollectionTeachCourse, finder, bson.M{"stuInfo": 1}, nil, 0, 0, &teachCourseList)
+	//if err != nil {
+	//	return err
+	//}
+	//if total == 0 || teachCourseList == nil || teachCourseList[0].StuInfo == nil || len(teachCourseList[0].StuInfo) < len(sids) {
+	//	return errors.New(fmt.Sprintf("One or more student is not in this learn course(%v)", goutil.Struct2Json(teachCourseList)))
+	//}
+	//scout := len(sids)
+	//flag := ""
+	//for _, v := range sids {
+	//	for j, s := range teachCourseList[0].StuInfo {
+	//		if j == len(teachCourseList[0].StuInfo) && v != s.GetStringP("sid") {
+	//			flag = v
+	//			break
+	//		}
+	//		if v == s.GetStringP("sid") {
+	//			scout--
+	//			break
+	//		}
+	//	}
+	//	if flag != "" {
+	//		break
+	//	}
+	//}
+	teachCourse, err := LoadTeachCourse(tcid)
+	if teachCourse == nil || teachCourse.StuInfo == nil || len(teachCourse.StuInfo) < len(sids) {
+		return errors.New(fmt.Sprintf("One or more student is not in this learn course(%v)", teachCourse))
 	}
 	scout := len(sids)
 	flag := ""
 	for _, v := range sids {
-		for j, s := range teachCourseList[0].StuInfo {
-			if j == len(teachCourseList[0].StuInfo) && v != s.GetStringP("sid") {
+		for j, s := range teachCourse.StuInfo {
+			if j == len(teachCourse.StuInfo) && v != s.GetStringP("sid") {
 				flag = v
 				break
 			}
@@ -497,15 +518,14 @@ func NotifyTcOverSelect2Student() error {
 		"endSelectTime": bson.M{"$lt": now},
 		"status": TeachCourseStatusSelectable,
 	}
-	//结束选课
-	_, err := C(CollectionTeachCourse).UpdateAll(finder,
-		bson.M{"$set": bson.M{"update": now,"status":TeachCourseStatusLearning}})
+	//列出所有已经结束选课，但未通知学生或者教师的选课
+	_, err := list(CollectionTeachCourse, finder, nil, nil, 0, 0, &tcList)
 	if err != nil {
 		return err
 	}
-
-	finder["status"] = TeachCourseStatusLearning
-	_, err = list(CollectionTeachCourse, finder, nil, nil, 0, 0, &tcList)
+	//结束选课，把状态改为已经结束选课
+	_, err = C(CollectionTeachCourse).UpdateAll(finder,
+		bson.M{"$set": bson.M{"update": now,"status":TeachCourseStatusLearning}})
 	if err != nil {
 		return err
 	}
