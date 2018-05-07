@@ -36,6 +36,8 @@ func RegisterHandle(app *iris.Application) {
 	stuRouter.Delete("/delete/", DeleteStudent)
 	stuRouter.Get("/list", GetStudents)
 	stuRouter.Get("/{id:string}", GetStudent)
+	stuRouter.Get("/checkImport", CheckImportStudent)
+	stuRouter.Get("/import", ImportStudent)
 
 	//teachers
 	teacherRouter := app.Party("/teachers")
