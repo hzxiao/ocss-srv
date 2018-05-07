@@ -65,7 +65,7 @@ func DeleteStudent(ctx context.Context) {
 		return
 	}
 
-	ids := data.GetStringArray("ids");
+	ids := data.GetStringArray("ids")
 	err = db.UpdateStudentByIDs(ids, goutil.Map{"status": db.UserStatsDelete})
 	if err != nil {
 		log.Errorf("[DeleteStudent] delete ids(%v) error(%v)", ids, err)
@@ -216,4 +216,129 @@ func Count(ctx context.Context) {
 	}
 
 	WriteResultSuccess(ctx, result)
+}
+
+func CheckImportStudent(ctx context.Context) {
+	var stus []*db.Student
+	err := ctx.ReadJSON(&stus)
+	if err != nil {
+		WriteResultWithArgErr(ctx, err)
+		return
+	}
+
+	//get all dept info
+	depts, err := db.FindAllDept()
+	if err != nil {
+		log.Errorf("[CheckImportStudent] find all dept error(%v)", err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+	//get all major
+	majors, err := db.FindAllMajor("")
+	if err != nil {
+		log.Errorf("[CheckImportStudent] find all major error(%v)", err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+
+	var stuOfDeptCountMap = make(map[string]int)
+	var errInfo = make([]string, len(stus))
+	for i, stu := range stus {
+		var dept string
+		if stu.Dept != nil {
+			dept = stu.Dept.GetString("name")
+		}
+		if dept == "" {
+			errInfo[i] = "学院为空"
+			continue
+		}
+		var validDept bool
+		for _, d := range depts {
+			if d.Name == dept {
+				stu.Dept.Set("id", d.ID)
+				validDept = true
+				break
+			}
+		}
+		if !validDept {
+			errInfo[i] = "无效的学院"
+			continue
+		}
+		//major
+		var major string
+		if stu.Major != nil {
+			major = stu.Major.GetString("name")
+		}
+		for _, m := range majors {
+			if m.Name == major {
+				stu.Major.Set("id", m.ID)
+			}
+		}
+		if !tools.ContainElem([]string{"2014", "2015", "2016", "2017"}, stu.SchoolYear) {
+			errInfo[i] = "无效的年级"
+			continue
+		}
+		if stu.ID != "" {
+			cnt, err := db.CountStudent(goutil.Map{"_id": stu.ID})
+			if err != nil {
+				log.Errorf("[CheckImportStudent] count student by id(%v) error(%v)", stu.Dept, err)
+				WriteResultWithSrvErr(ctx, err)
+				return
+			}
+			if cnt > 0 {
+				errInfo[i] = "学号已存在"
+				continue
+			}
+		} else {
+			key := stu.Dept.GetString("id") + stu.SchoolYear
+			num, ok := stuOfDeptCountMap[key]
+			if !ok {
+				cnt, err := db.CountStudent(goutil.Map{
+					"dept.id":    stu.Dept.GetString("id"),
+					"schoolYear": stu.SchoolYear,
+				})
+				if err != nil {
+					log.Errorf("[CheckImportStudent] count student by error(%v)", err)
+					WriteResultWithSrvErr(ctx, err)
+					return
+				}
+				stuOfDeptCountMap[key] = cnt
+				num = cnt
+			}
+
+			stu.ID = stu.SchoolYear[2:] + stu.Dept.GetString("id") + fmt.Sprintf("%03d", num+1)
+			stuOfDeptCountMap[key]++
+		}
+	}
+
+	WriteResultSuccess(ctx, goutil.Map{
+		"studentList": stus,
+		"errInfo":     errInfo,
+	})
+}
+
+func ImportStudent(ctx context.Context) {
+	var stus []*db.Student
+	err := ctx.ReadJSON(&stus)
+	if err != nil {
+		WriteResultWithArgErr(ctx, err)
+		return
+	}
+
+	for _, stu := range stus {
+		err = db.AddStudent(stu)
+		if err != nil {
+			log.Errorf("[ImportStudent] add stu(%v) error(%v)", goutil.Struct2Json(stu), err)
+			if strings.Contains(err.Error(), "already exists") {
+				WriteResultErrByMsg(ctx, CodeAlreadyExists, "学号已存在", err)
+				return
+			}
+			WriteResultWithSrvErr(ctx, err)
+			return
+		}
+	}
+
+	WriteResultSuccess(ctx, goutil.Map{
+		"studentList": stus,
+	})
 }

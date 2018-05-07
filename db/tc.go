@@ -494,3 +494,7 @@ func NotifyTcFull2Adm(ids []string) error {
 
 	return nil
 }
+
+func Notify()  {
+	
+}

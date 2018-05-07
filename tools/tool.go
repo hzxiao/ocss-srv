@@ -59,7 +59,7 @@ func ReserveDecimalFractionOf(value float64, n int) (float64, error) {
 	return strconv.ParseFloat(s, 64)
 }
 
-func ReplaceKeys(containerMap, replaceMap goutil.Map)  {
+func ReplaceKeys(containerMap, replaceMap goutil.Map) {
 	if len(containerMap) == 0 {
 		return
 	}
@@ -70,4 +70,14 @@ func ReplaceKeys(containerMap, replaceMap goutil.Map)  {
 		containerMap.Set(replaceMap.GetString(k), containerMap[k])
 		delete(containerMap, k)
 	}
+}
+
+func ContainElem(ss []string, t string) bool {
+	for i := range ss {
+		if ss[i] == t {
+			return true
+		}
+	}
+
+	return false
 }
