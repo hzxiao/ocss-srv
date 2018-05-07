@@ -90,12 +90,14 @@ func ListTeachCourse(ctx context.Context) {
 		{Key: "page", Type: "int", DefaultValue: "0"},
 		{Key: "pageSize", Type: "int", DefaultValue: "20"},
 		{Key: "sort", Type: "string"},
+		{Key: "tid", Type: "string"},
+
 	})
 	if err != nil {
 		WriteResultWithArgErr(ctx, err)
 		return
 	}
-	var cids, tids []string
+	var cids, tids,sids []string
 	if HasOneOfKeys(argMap, "name", "deptId", "nature", "attr") {
 		crsExactMap := TakeByReplaceKeys(argMap, goutil.Map{"deptId": "dept.id", "nature": "nature", "attr": "attr"})
 		crsExactMap.Set("status", db.CourseStatusChecking)
@@ -109,6 +111,7 @@ func ListTeachCourse(ctx context.Context) {
 		for i := range crs {
 			cids = append(cids, crs[i].ID)
 		}
+
 		if !argMap.Exist("name") && len(cids) == 0 {
 			WriteResultSuccess(ctx, goutil.Map{
 				"tcList": nil,
@@ -129,6 +132,7 @@ func ListTeachCourse(ctx context.Context) {
 				tids = append(tids, tes[i].ID)
 			}
 		}
+
 		if len(cids) == 0 && len(tids) == 0 {
 			WriteResultSuccess(ctx, goutil.Map{
 				"tcList": nil,
@@ -144,20 +148,31 @@ func ListTeachCourse(ctx context.Context) {
 	if argMap.Exist("sort") {
 		sort = append(sort, argMap.GetString("sort"))
 	}
+	if argMap.Exist("tid") {
+		tids = nil
+		tids = append(tids, argMap.GetString("tid"))
+	}
+
 	status := int(argMap.GetInt64("status"))
 	selectState := int(argMap.GetInt64("selectState"))
-	tcs, total, err := db.ListTeachCourses(status, selectState, cids, tids, sort, skip, limit)
+	tcs, total, err := db.ListTeachCourses(status, selectState,nil, cids, tids, sids, sort, skip, limit)
 	if err != nil {
 		log.Errorf("[ListTeachCourse] error(%v)", err)
 		WriteResultWithSrvErr(ctx, err)
 		return
 	}
-
-	cids, tids = nil, nil
+	cids, tids, sids = nil, nil, nil
 	for i := range tcs {
 		cids = append(cids, tcs[i].CID)
 		tids = append(tids, tcs[i].TID)
+
+		if tcs[i].StuInfo != nil&&len(tcs[i].StuInfo)>0 {
+			for j := range tcs[i].StuInfo{
+				sids = append(sids,tcs[i].StuInfo[j].GetString("sid"))
+			}
+		}
 	}
+
 	crsList, err := db.ListCourseByIds(cids)
 	if err != nil {
 		log.Errorf("[ListTeachCourse] error(%v)", err)
@@ -170,9 +185,22 @@ func ListTeachCourse(ctx context.Context) {
 		WriteResultWithSrvErr(ctx, err)
 		return
 	}
+	stuList, err := db.ListStudentByIds(sids)
+	if err != nil {
+		log.Errorf("[ListTeachCourse] error(%v)", err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+
 	var tcList []goutil.Map
+	teachCourseStatusCN := []string{"", "选课中", "", "学习中" }
 	for i := range tcs {
 		tc := goutil.Struct2Map(tcs[i])
+		tcStatus := 1
+		if tc.Get("status") != nil{
+			tcStatus = int(tc.GetInt64("status"))
+		}
+		tc.Set("tcStatus", teachCourseStatusCN[tcStatus])
 		for j := range crsList {
 			if crsList[j].ID == tcs[i].CID {
 				tc.Set("courseName", crsList[j].Name)
@@ -180,10 +208,62 @@ func ListTeachCourse(ctx context.Context) {
 					tc.Set("deptName", crsList[j].Dept.GetString("name"))
 					tc.Set("nature", crsList[j].Nature)
 					tc.Set("attr", crsList[j].Attr)
+					tc.Set("credit", crsList[j].Credit)
 				}
 				break
 			}
 		}
+		if tcs[i].StuInfo != nil&&len(tcs[i].StuInfo)>0 && stuList != nil && len(stuList) > 0{
+			stuInfo := tcs[i].StuInfo
+			// 成绩
+			var grade,ordinaryGrade,examGrade float64
+			var  gs,ogs,egs int
+			for m := range stuInfo{
+				for n := range stuList{
+					if stuInfo[m].GetString("sid") == stuList[n].ID {
+						stuInfo[m].Set("name",stuList[n].Name)
+						stuInfo[m].Set("class",stuList[n].Class)
+						stuInfo[m].Set("schoolYear",stuList[n].SchoolYear)
+						stuInfo[m].Set("deptName",stuList[n].Dept.GetString("name"))
+						sex := "男"
+						if stuList[n].Dept.GetString("sex") != "male"{
+							sex = "女"
+						}
+						stuInfo[m].Set("majorName",sex)
+					}
+				}
+				if stuInfo[m].Get("grade") != nil{
+					gs ++
+					grade += stuInfo[m].GetFloat64("grade")
+				}
+				if stuInfo[m].Get("ordinaryGrade") != nil{
+					ogs ++
+					ordinaryGrade += stuInfo[m].GetFloat64("ordinaryGrade")
+				}
+				if stuInfo[m].Get("examGrade") != nil{
+					egs ++
+					examGrade += stuInfo[m].GetFloat64("examGrade")
+				}
+			}
+			tc.Set("stuInfo", stuInfo)
+			//log.Printf("[ListTeachCourse] get  stuInfo(%v) ,students(%v)", stuInfo, stuList)
+
+			if gs > 0{
+				grade = grade/(float64(gs))
+				tc.Set("grade", grade)
+			}
+			tc.Set("gradeNum", gs)
+			if ogs > 0{
+				ordinaryGrade = ordinaryGrade/float64(ogs)
+				tc.Set("ordinaryGrade", ordinaryGrade)
+			}
+			if egs > 0{
+				examGrade = examGrade/float64(egs)
+				tc.Set("examGrade", examGrade)
+			}
+		}
+
+
 		for k := range teList {
 			if teList[k].ID == tcs[i].TID {
 				tc.Set("teacherName", teList[k].Name)
@@ -191,6 +271,217 @@ func ListTeachCourse(ctx context.Context) {
 		}
 		tcList = append(tcList, tc)
 	}
+	//log.Printf("[ListTeachCourse] get courseList(%v) ", tcList)
+
+	WriteResultSuccess(ctx, goutil.Map{
+		"tcList": tcList,
+		"total":  total,
+	})
+}
+
+func ListTeachCourseForStu(ctx context.Context) {
+	argMap, err := CheckURLArg(ctx.FormValues(), []*Arg{
+		{Key: "name", Type: "string"},
+		{Key: "deptId", Type: "string"},
+		{Key: "nature", Type: "string"},
+		{Key: "attr", Type: "string"},
+		{Key: "status", Type: "int"},
+		{Key: "selectState", Type: "int"},
+		{Key: "page", Type: "int", DefaultValue: "0"},
+		{Key: "pageSize", Type: "int", DefaultValue: "20"},
+		{Key: "sort", Type: "string"},
+		{Key: "sid", Type: "string"},
+
+	})
+	if err != nil {
+		WriteResultWithArgErr(ctx, err)
+		return
+	}
+	var cids, tids,sids []string
+	if HasOneOfKeys(argMap, "name", "deptId", "nature", "attr") {
+		crsExactMap := TakeByReplaceKeys(argMap, goutil.Map{"deptId": "dept.id", "nature": "nature", "attr": "attr"})
+		crsExactMap.Set("status", db.CourseStatusChecking)
+		crsFuzzyMap := TakeByKeys(argMap, "name")
+		crs, _, err := db.ListCourse(crsExactMap, crsFuzzyMap, nil, 0, 0)
+		if err != nil {
+			log.Errorf("[ListTeachCourse] error(%v)", err)
+			WriteResultWithSrvErr(ctx, err)
+			return
+		}
+		for i := range crs {
+			cids = append(cids, crs[i].ID)
+		}
+
+		if !argMap.Exist("name") && len(cids) == 0 {
+			WriteResultSuccess(ctx, goutil.Map{
+				"tcList": nil,
+				"total":  0,
+			})
+			return
+		}
+		if argMap.Exist("name") {
+			teExactMap := goutil.Map{"status": db.UserStatsNormal}
+			teFuzzyMap := goutil.Map{"name": argMap.GetString("name")}
+			tes, _, err := db.ListTeacher(teExactMap, teFuzzyMap, nil, 0, 0)
+			if err != nil {
+				log.Errorf("[ListTeachCourseForStu] error(%v)", err)
+				WriteResultWithSrvErr(ctx, err)
+				return
+			}
+			for i := range tes {
+				tids = append(tids, tes[i].ID)
+			}
+		}
+
+		if len(cids) == 0 && len(tids) == 0 {
+			WriteResultSuccess(ctx, goutil.Map{
+				"tcList": nil,
+				"total":  0,
+			})
+			return
+		}
+	}
+
+	limit := int(argMap.GetInt64("pageSize"))
+	skip := int(argMap.GetInt64("page")) * limit
+	var sort []string
+	if argMap.Exist("sort") {
+		sort = append(sort, argMap.GetString("sort"))
+	}
+	if argMap.Exist("tid") {
+		tids = nil
+		tids = append(tids, argMap.GetString("tid"))
+	}
+	sids = nil
+	sid := ""
+	if argMap.Exist("sid") {
+		sids = append(sids, argMap.GetString("sid"))
+		sid = argMap.GetString("sid")
+	}
+	status := int(argMap.GetInt64("status"))
+	selectState := int(argMap.GetInt64("selectState"))
+	tcs, total, err := db.ListTeachCourses(status, selectState,nil, cids, tids, sids, sort, skip, limit)
+	if err != nil {
+		log.Errorf("[ListTeachCourseForStu] error(%v)", err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+	cids, tids, sids = nil, nil, nil
+	for i := range tcs {
+		cids = append(cids, tcs[i].CID)
+		tids = append(tids, tcs[i].TID)
+		stuInfo := []goutil.Map{}
+		if tcs[i].StuInfo != nil&&len(tcs[i].StuInfo)>0 {
+			for j := range tcs[i].StuInfo{
+				if tcs[i].StuInfo[j].Get("sid") != nil && tcs[i].StuInfo[j].GetString("sid") == sid {
+					sids = append(sids,tcs[i].StuInfo[j].GetString("sid"))
+					stuInfo = append(stuInfo, tcs[i].StuInfo[j])
+					tcs[i].StuInfo = stuInfo
+					break
+				}
+			}
+		}
+	}
+
+	crsList, err := db.ListCourseByIds(cids)
+	if err != nil {
+		log.Errorf("[ListTeachCourseForStu] error(%v)", err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+	teList, err := db.ListTeacherByIds(tids)
+	if err != nil {
+		log.Errorf("[ListTeachCourseForStu] error(%v)", err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+	stuList, err := db.ListStudentByIds(sids)
+	if err != nil {
+		log.Errorf("[ListTeachCourseForStu] error(%v)", err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+
+	var tcList []goutil.Map
+	teachCourseStatusCN := []string{"", "选课中", "", "学习中" }
+	for i := range tcs {
+		tc := goutil.Struct2Map(tcs[i])
+		tcStatus := 1
+		if tc.Get("status") != nil{
+			tcStatus = int(tc.GetInt64("status"))
+		}
+		tc.Set("tcStatus", teachCourseStatusCN[tcStatus])
+		for j := range crsList {
+			if crsList[j].ID == tcs[i].CID {
+				tc.Set("courseName", crsList[j].Name)
+				if crsList[j].Dept != nil {
+					tc.Set("deptName", crsList[j].Dept.GetString("name"))
+					tc.Set("nature", crsList[j].Nature)
+					tc.Set("attr", crsList[j].Attr)
+					tc.Set("credit", crsList[j].Credit)
+				}
+				break
+			}
+		}
+		if tcs[i].StuInfo != nil&&len(tcs[i].StuInfo)>0 && stuList != nil && len(stuList) > 0{
+			stuInfo := tcs[i].StuInfo
+			// 成绩
+			var grade,ordinaryGrade,examGrade float64
+			var  gs,ogs,egs int
+			for m := range stuInfo{
+				for n := range stuList{
+					if stuInfo[m].GetString("sid") == stuList[n].ID {
+						stuInfo[m].Set("name",stuList[n].Name)
+						stuInfo[m].Set("class",stuList[n].Class)
+						stuInfo[m].Set("schoolYear",stuList[n].SchoolYear)
+						stuInfo[m].Set("deptName",stuList[n].Dept.GetString("name"))
+						sex := "男"
+						if stuList[n].Dept.GetString("sex") != "male"{
+							sex = "女"
+						}
+						stuInfo[m].Set("majorName",sex)
+					}
+				}
+				if stuInfo[m].Get("grade") != nil{
+					gs ++
+					grade += stuInfo[m].GetFloat64("grade")
+				}
+				if stuInfo[m].Get("ordinaryGrade") != nil{
+					ogs ++
+					ordinaryGrade += stuInfo[m].GetFloat64("ordinaryGrade")
+				}
+				if stuInfo[m].Get("examGrade") != nil{
+					egs ++
+					examGrade += stuInfo[m].GetFloat64("examGrade")
+				}
+			}
+			tc.Set("stuInfo", stuInfo)
+			//log.Printf("[ListTeachCourse] get  stuInfo(%v) ,students(%v)", stuInfo, stuList)
+
+			if gs > 0{
+				grade = grade/(float64(gs))
+				tc.Set("grade", grade)
+			}
+			tc.Set("gradeNum", gs)
+			if ogs > 0{
+				ordinaryGrade = ordinaryGrade/float64(ogs)
+				tc.Set("ordinaryGrade", ordinaryGrade)
+			}
+			if egs > 0{
+				examGrade = examGrade/float64(egs)
+				tc.Set("examGrade", examGrade)
+			}
+		}
+
+
+		for k := range teList {
+			if teList[k].ID == tcs[i].TID {
+				tc.Set("teacherName", teList[k].Name)
+			}
+		}
+		tcList = append(tcList, tc)
+	}
+	//log.Printf("[ListTeachCourseForStu] get courseList(%v) ", tcList)
 
 	WriteResultSuccess(ctx, goutil.Map{
 		"tcList": tcList,
@@ -238,6 +529,10 @@ func ListStudentCourse(ctx context.Context) {
 		crsExactMap := goutil.Map{}
 		crsExactMap.Set("status", db.CourseStatusChecking)
 		crsFuzzyMap := TakeByKeys(argMap, "name")
+		//crsFuzzyMap := goutil.Map{}
+		//if argMap.Exist("name") {
+		//	crsFuzzyMap.Set("name", argMap.Get("name"))
+		//}
 		crs, _, err := db.ListCourse(crsExactMap, crsFuzzyMap, nil, 0, 0)
 		if err != nil {
 			log.Errorf("[ListStudentCourse] error(%v)", err)
@@ -247,7 +542,9 @@ func ListStudentCourse(ctx context.Context) {
 		for i := range crs {
 			cids = append(cids, crs[i].ID)
 		}
-		if !argMap.Exist("name") && len(cids) == 0 {
+		//log.Printf("[ListStudentCourse] get courseList(%v) cids[%v] fuzzyCondMap(%v)", crs,cids, crsFuzzyMap)
+
+		if  len(cids) == 0 {
 			WriteResultSuccess(ctx, goutil.Map{
 				"tcList": nil,
 				"total":  0,
@@ -262,10 +559,9 @@ func ListStudentCourse(ctx context.Context) {
 	if argMap.Exist("sort") {
 		sort = append(sort, argMap.GetString("sort"))
 	}
-
 	selectState := int(argMap.GetInt64("selectState"))
 	sid := ctx.Values().GetString("uid")
-	tcs, total, err := db.ListStudentCourse(selectState, sid, sort, skip, limit)
+	tcs, total, err := db.ListStudentCourse(selectState, sid, cids, sort, skip, limit)
 	if err != nil {
 		log.Errorf("[ListStudentCourse] error(%v)", err)
 		WriteResultWithSrvErr(ctx, err)
@@ -310,6 +606,7 @@ func ListStudentCourse(ctx context.Context) {
 		}
 		tcList = append(tcList, tc)
 	}
+	log.Printf("[ListStudentCourse] get tcList(%v) ", tcList)
 
 	WriteResultSuccess(ctx, goutil.Map{
 		"tcList": tcList,
@@ -366,10 +663,31 @@ func GetTeachCourse(ctx context.Context) {
 		WriteResultWithSrvErr(ctx, err)
 		return
 	}
+
+	//判断用户角色，如果用户学生则列出该学生的具体信息
+	uid := ctx.Values().GetString("uid")
+	role, err := ctx.Values().GetFloat64("role")
+	if err != nil {
+		log.Errorf("[GetTeachCourse] get role uid(%v) error(%v)", uid, err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+	var student *db.Student
+	if role == 3{
+		student, err = db.LoadStudent(uid)
+		if err != nil {
+			log.Errorf("[GetTeachCourse] get student uid(%v) error(%v)", uid, err)
+			WriteResultWithSrvErr(ctx, err)
+			return
+		}
+	}
+
+
 	WriteResultSuccess(ctx, goutil.Map{
 		"tc":      tc,
 		"course":  course,
 		"teacher": teacher,
+		"student": student,
 	})
 }
 
@@ -399,7 +717,15 @@ func ListStudentOfCourse(ctx context.Context) {
 		stu := goutil.Struct2Map(s)
 		for _, item := range tc.StuInfo {
 			stu.Set("selectTime", item.Get("create"))
-			stu.Set("grade", item.Get("grade"))
+			if item.Get("grade") != nil {
+				stu.Set("grade", item.GetFloat64("grade"))
+			}
+			if item.Get("ordinaryGrade") != nil {
+				stu.Set("ordinaryGrade", item.GetFloat64("ordinaryGrade"))
+			}
+			if item.Get("examGrade") != nil {
+				stu.Set("examGrade", item.GetFloat64("examGrade"))
+			}
 		}
 		studentList = append(studentList, stu)
 	}
@@ -409,6 +735,8 @@ func ListStudentOfCourse(ctx context.Context) {
 		"studentList":  studentList,
 	})
 }
+
+
 
 func UpdateStudentForTc(ctx context.Context)  {
 	var data goutil.Map
@@ -436,3 +764,26 @@ func UpdateStudentForTc(ctx context.Context)  {
 
 	WriteResultSuccess(ctx, "OK")
 }
+
+// 老师导入课程的学生成绩
+func SetGradeForTc(ctx context.Context) {
+	var info struct {
+		Tc  *db.TeachCourse `json:"tc"`
+	}
+	err := ctx.ReadJSON(&info)
+	if err != nil {
+		WriteResultWithArgErr(ctx, err)
+		return
+	}
+
+	err = db.TeaSettingGrade(info.Tc.ID, info.Tc.StuInfo)
+	if err != nil {
+		log.Errorf("[SetGradeForTc] add tc(%v) error(%v)", goutil.Struct2Json(info), err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
+
+	WriteResultSuccess(ctx, "OK")
+
+}
+

@@ -154,9 +154,13 @@ func TestAddComment2(t *testing.T) {
 		}
 
 		times := []rune(c.GetString("上课时间"))
-		tec.TakeTime = goutil.Map{
-			"dayOfWeek": string(times[1]),
-			"sections": []string{"9", "10", "11"},
+		//tec.TakeTime = goutil.Map{
+		//	"dayOfWeek": string(times[1]),
+		//	"sections": []string{"9", "10", "11"},
+		//}
+		tec.TakeTime = &TakeTime{
+			DayOfWeek:[]string{string(times[1])},
+			Sections: [][]int64{[]int64{10, 11}, },
 		}
 		tcs = append(tcs, tec)
 	}
@@ -194,4 +198,72 @@ func TestPrepareData(t *testing.T) {
 		t.Error(err)
 		return
 	}
+}
+
+
+func TestPrepareData2(t *testing.T) {
+	removeAll()
+	fileDir := "../data/"
+
+	//var users []*User
+	//err := tools.UnmarshalJsonFile(fileDir+"users.json", &users)
+	//if err != nil {
+	//	t.Error(err)
+	//	return
+	//}
+	//
+	//for i := range users {
+	//	err = AddUser(users[i])
+	//	if err != nil {
+	//		t.Log(users[i].ID)
+	//		t.Error(err)
+	//		return
+	//	}
+	//}
+
+	var courses []*Course
+	err := tools.UnmarshalJsonFile(fileDir+"course.json", &courses)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	for i := range courses {
+		_, err = AddCourse(courses[i])
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	}
+
+	var teachers []*Teacher
+	err = tools.UnmarshalJsonFile(fileDir+"teachers.json", &teachers)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	for i := range teachers {
+		err = AddTeacher(teachers[i])
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	}
+
+	var tcs []*TeachCourse
+	err = tools.UnmarshalJsonFile(fileDir+"tc.json", &tcs)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	for i := range tcs {
+		err = AddTeachCourse(tcs[i])
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	}
+
 }

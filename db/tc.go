@@ -88,10 +88,13 @@ func hasSameValue(x, y []int64) bool {
 	return false
 }
 
-func ListTeachCourses(status int, selectState int, cids, tids []string, sort []string, skip, limit int) ([]*TeachCourse, int, error) {
+func ListTeachCourses(status int, selectState int, tcids,cids, tids,sids []string, sort []string, skip, limit int) ([]*TeachCourse, int, error) {
 	finder := bson.M{}
 	if status > 0 {
 		finder["status"] = status
+	}
+	if len(tcids) > 0 {
+		finder["_id"] = bson.M{"$in": tcids}
 	}
 	now := tools.NowMillisecond()
 	switch selectState {
@@ -109,6 +112,9 @@ func ListTeachCourses(status int, selectState int, cids, tids []string, sort []s
 	if len(tids) > 0 {
 		finder["tid"] = bson.M{"$in": tids}
 	}
+	if len(sids) > 0 {
+		finder["stuInfo.sid"] = bson.M{"$in": sids}
+	}
 	var teachCourseList []*TeachCourse
 	total, err := list(CollectionTeachCourse, finder, nil, sort, skip, limit, &teachCourseList)
 	if err != nil {
@@ -123,6 +129,7 @@ func LoadTeachCourse(id string) (*TeachCourse, error) {
 	err := one(CollectionTeachCourse, bson.M{"_id": id}, nil, &tc)
 	return &tc, err
 }
+
 
 func UpdateTeachCourseByIDs(ids []string, tc *TeachCourse) (err error) {
 	if len(ids) == 0 {
@@ -256,51 +263,71 @@ func TeaSettingGrade(tcid string, info []goutil.Map) error {
 	if info == nil || len(info) == 0 {
 		return errors.New("grade info is nil")
 	}
-	var sids []string
+	sids:= []string{}
 	var stuInfo goutil.Map = goutil.Map{}
 	finder := bson.M{"_id": tcid}
 	update_time := tools.NowMillisecond()
 	for _, v := range info {
 		sids = append(sids, v.GetStringP("sid"))
 		sin := goutil.Map{}
-		if v.GetFloat64P("grade") > 0 {
+		if v.Get("grade") != nil {
 			finder["stuInfo.cstatus"] = SCourseStatusSelected
 			finder["status"] = TeachCourseStatusLearning
 			sin.Set("stuInfo.$.grade", v.GetFloat64P("grade"))
 		}
-		if v.GetFloat64P("ordinaryGrade") > 0 {
+		if v.Get("ordinaryGrade") != nil{
 			finder["stuInfo.cstatus"] = SCourseStatusSelected
 			finder["status"] = TeachCourseStatusLearning
 			sin.Set("stuInfo.$.ordinaryGrade", v.GetFloat64P("ordinaryGrade"))
 		}
-		if v.GetFloat64P("examGrade") > 0 {
+		if v.Get("examGrade") != nil{
 			finder["stuInfo.cstatus"] = SCourseStatusSelected
 			finder["status"] = TeachCourseStatusLearning
 			sin.Set("stuInfo.$.examGrade", v.GetFloat64P("examGrade"))
 		}
-		if v.GetFloat64P("cstatus") > 0 {
+		if v.Get("cstatus") != nil{
 			sin.Set("stuInfo.$.cstatus", v.GetInt64P("cstatus"))
 		}
 		sin.Set("stuInfo.$.update", update_time)
-
 		stuInfo.Set(v.GetStringP("sid"), sin)
 	}
-	//finder["stuInfo.sid"] = bson.M{"$in":sids}
-	//fmt.Println(tools.Struct2BsonMap(stuInfo))
+
 	//先查
-	var teachCourseList []*TeachCourse
-	total, err := list(CollectionTeachCourse, finder, bson.M{"stuInfo": 1}, nil, 0, 0, &teachCourseList)
-	if err != nil {
-		return err
-	}
-	if total == 0 || teachCourseList == nil || teachCourseList[0].StuInfo == nil || len(teachCourseList[0].StuInfo) < len(sids) {
-		return errors.New(fmt.Sprintf("One or more student is not in this learn course(%v)", goutil.Struct2Json(teachCourseList)))
+
+	//var teachCourseList []*TeachCourse
+	//total, err := list(CollectionTeachCourse, finder, bson.M{"stuInfo": 1}, nil, 0, 0, &teachCourseList)
+	//if err != nil {
+	//	return err
+	//}
+	//if total == 0 || teachCourseList == nil || teachCourseList[0].StuInfo == nil || len(teachCourseList[0].StuInfo) < len(sids) {
+	//	return errors.New(fmt.Sprintf("One or more student is not in this learn course(%v)", goutil.Struct2Json(teachCourseList)))
+	//}
+	//scout := len(sids)
+	//flag := ""
+	//for _, v := range sids {
+	//	for j, s := range teachCourseList[0].StuInfo {
+	//		if j == len(teachCourseList[0].StuInfo) && v != s.GetStringP("sid") {
+	//			flag = v
+	//			break
+	//		}
+	//		if v == s.GetStringP("sid") {
+	//			scout--
+	//			break
+	//		}
+	//	}
+	//	if flag != "" {
+	//		break
+	//	}
+	//}
+	teachCourse, err := LoadTeachCourse(tcid)
+	if teachCourse == nil || teachCourse.StuInfo == nil || len(teachCourse.StuInfo) < len(sids) {
+		return errors.New(fmt.Sprintf("One or more student is not in this learn course(%v)", teachCourse))
 	}
 	scout := len(sids)
 	flag := ""
 	for _, v := range sids {
-		for j, s := range teachCourseList[0].StuInfo {
-			if j == len(teachCourseList[0].StuInfo) && v != s.GetStringP("sid") {
+		for j, s := range teachCourse.StuInfo {
+			if j == len(teachCourse.StuInfo) && v != s.GetStringP("sid") {
 				flag = v
 				break
 			}
@@ -318,11 +345,13 @@ func TeaSettingGrade(tcid string, info []goutil.Map) error {
 	}
 
 	changeI := bson.M{}
-	for _, v := range teachCourseList[0].StuInfo {
+	//log.Printf("[TeaSettingGrade] info(%v)  changeStuInfo(%v)", info, stuInfo)
+
+	for _, v := range info {
 		changeI = tools.ToBsonMap(stuInfo.GetMapP(v.GetStringP("sid")))
 		changeI["update"] = update_time
 		finder["stuInfo.sid"] = v.GetStringP("sid")
-		fmt.Println("finder,", goutil.Struct2Json(finder), ";change", goutil.Struct2Json(changeI))
+		log.Printf("[TeaSettingGrade] finder(%v) change(%v)", finder,changeI)
 		_, err = C(CollectionTeachCourse).UpdateAll(finder,
 			bson.M{"$set": changeI})
 	}
@@ -417,6 +446,27 @@ func StuCancelCourse(tcids []string, sid string) error {
 	return nil
 }
 
+func StuSelectedCourse(tcids []string, sid string) error {
+	if tcids == nil || len(tcids) == 0 {
+		return errors.New("tcid is nil")
+	}
+	if sid == "" {
+		return errors.New("sid is nil")
+	}
+	update_time := tools.NowMillisecond()
+	// 已选正在选的课，即结束选课时加入我的课程
+	for i := 0; i < len(tcids); i++ {
+		_, err := C(CollectionTeachCourse).UpdateAll(bson.M{"_id": tcids[i], "status": TeachCourseStatusSelectable,
+			"stuInfo.sid": sid, "stuInfo.cstatus": SCourseStatusSelecting, "endSelectTime": bson.M{"$lt": update_time}},
+			bson.M{ "$set": bson.M{"update": update_time,"status":SCourseStatusSelected,"stuInfo.$.cstatus": TeachCourseStatusLearning}})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func ListStuLearnCourse(cstatus int, sid string, sort []string, skip, limit int) ([]*TeachCourse, int, error) {
 	if sid == "" {
 		return nil, 0, errors.New("sid is nil")
@@ -434,7 +484,7 @@ func ListStuLearnCourse(cstatus int, sid string, sort []string, skip, limit int)
 	return teachCourseList, total, nil
 }
 
-func ListStudentCourse(selectState int, sid string, sort []string, skip, limit int) ([]*TeachCourse, int, error) {
+func ListStudentCourse(selectState int, sid string, cids []string, sort []string, skip, limit int) ([]*TeachCourse, int, error) {
 	finder := bson.M{}
 	now := tools.NowMillisecond()
 	switch selectState {
@@ -448,6 +498,9 @@ func ListStudentCourse(selectState int, sid string, sort []string, skip, limit i
 	}
 
 	finder["stuInfo.sid"] = sid
+	if len(cids) > 0 {
+		finder["cid"] = bson.M{"$in": cids}
+	}
 
 	var teachCourseList []*TeachCourse
 	total, err := list(CollectionTeachCourse, finder, nil, sort, skip, limit, &teachCourseList)
@@ -455,6 +508,80 @@ func ListStudentCourse(selectState int, sid string, sort []string, skip, limit i
 		return nil, 0, err
 	}
 	return teachCourseList, total, nil
+}
+
+func NotifyTcOverSelect2Student() error {
+	var tcList []*TeachCourse
+	now := tools.NowMillisecond()
+
+	finder := bson.M{
+		"endSelectTime": bson.M{"$lt": now},
+		"status": TeachCourseStatusSelectable,
+	}
+	//列出所有已经结束选课，但未通知学生或者教师的选课
+	_, err := list(CollectionTeachCourse, finder, nil, nil, 0, 0, &tcList)
+	if err != nil {
+		return err
+	}
+	//结束选课，把状态改为已经结束选课
+	_, err = C(CollectionTeachCourse).UpdateAll(finder,
+		bson.M{"$set": bson.M{"update": now,"status":TeachCourseStatusLearning}})
+	if err != nil {
+		return err
+	}
+
+	log.Printf("NotifyTcOverSelect2Student: finder(%v) tcList(%v)",finder, tcList)
+
+	for i := range tcList {
+		crs, err := LoadCourse(tcList[i].CID)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+		tea, err := LoadTeacher(tcList[i].TID)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+
+		title := fmt.Sprintf("%vx选课结束！！！", crs.Name)
+		content := fmt.Sprintf("课程代码：%v，任课老师：%v，课程名称：%v 结束选课",
+			crs.ID, tea.Name, crs.Name)
+
+		SendNotice(RoleAdmin, goutil.Map{
+			"title":   title,
+			"content": content,
+		})
+		SendNotice(RoleTeacher, goutil.Map{
+			"title":   title,
+			"content": content,
+			"tid": tea.ID,
+		})
+		stu:=[]string{}
+		if  tcList[i].StuInfo != nil &&  len(tcList[i].StuInfo) > 0  {
+			for j:= range tcList[i].StuInfo{
+				stu = append(stu,tcList[i].StuInfo[j].GetString("sid"))
+				finder["stuInfo.cstatus"] = SCourseStatusSelecting
+				_, err = C(CollectionTeachCourse).UpdateAll(finder,
+					bson.M{ "$set": bson.M{"update": now,"stuInfo.$.cstatus": SCourseStatusSelected}})
+				if err != nil {
+					return err
+				}
+			}
+		}
+		log.Printf("NotifyTcOverSelect2Student: stu(%v)", stu)
+		if len(stu) > 0 {
+			SendNotice(RoleStudent, goutil.Map{
+				"title":   title,
+				"content": content,
+				"sid": stu,
+			})
+		}
+
+
+	}
+
+	return nil
 }
 
 func NotifyTcFull2Adm(ids []string) error {

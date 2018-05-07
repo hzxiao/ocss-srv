@@ -6,11 +6,13 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"log"
 )
 
 func SaveFile(dir string, filename string, reader io.Reader) error {
 	path := dir + string(filepath.Separator) + filename
 
+	log.Printf("[SaveFile] save path(%v) ", path)
 	data, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return err

@@ -24,6 +24,7 @@ func UploadFile(ctx context.Context) {
 		WriteResultWithArgErr(ctx, err)
 		return
 	}
+	log.Printf("[UploadFile] add file(%v) fileHeader(%v)", file, fileHeader)
 	f := &db.File{}
 	_, f.Name = filepath.Split(fileHeader.Filename)
 	f.Ext = strings.ToLower(filepath.Ext(f.Name))
@@ -114,6 +115,12 @@ func AddCourseResource(ctx context.Context) {
 		WriteResultWithSrvErr(ctx, err)
 		return
 	}
+	err = db.NotifyResourceToStudent(r)
+	if err != nil {
+		log.Errorf("[AddCourseResource] notice resource(%v) error(%v)", goutil.Struct2Json(r), err)
+		WriteResultWithSrvErr(ctx, err)
+		return
+	}
 
 	WriteResultSuccess(ctx, goutil.Map{
 		"resource": r,
@@ -177,8 +184,51 @@ func GetCourseResource(ctx context.Context) {
 		WriteResultWithSrvErr(ctx, err)
 		return
 	}
+
+
+	var resList []goutil.Map
+
+	for i := range resourceList {
+		res := goutil.Struct2Map(resourceList[i])
+		tid := resourceList[i].TID
+		tcid := resourceList[i].TCID
+		teacher,err := db.LoadTeacher(tid)
+		if err != nil {
+			log.Errorf("[GetCourseResource] get by(%v) error(%v)", teacher, err)
+			WriteResultWithSrvErr(ctx, err)
+			return
+		}
+		res.Set("teacherName", "")
+		res.Set("courseName", "")
+		if teacher != nil {
+			res.Set("teacherName", teacher.Name)
+		}
+		teachCourse,err := db.LoadTeachCourse(tcid)
+		if err != nil {
+			log.Errorf("[GetCourseResource] get by(%v) error(%v)", teachCourse, err)
+			WriteResultWithSrvErr(ctx, err)
+			return
+		}
+		if teachCourse != nil {
+			course,err := db.LoadCourse(teachCourse.CID)
+			if err != nil {
+				log.Errorf("[GetCourseResource] get by(%v) error(%v)", course, err)
+				WriteResultWithSrvErr(ctx, err)
+				return
+			}
+			if course != nil {
+				res.Set("courseName", course.Name)
+			}
+		}
+		resList = append(resList,res)
+
+	}
+	log.Printf("[GetCourseResource] by argMap(%)  get resList(%v) ", argMap, resList)
+	
 	WriteResultSuccess(ctx, goutil.Map{
-		"resourceList": resourceList,
+		"resourceList": resList,
 		"total":        total,
 	})
 }
+
+
