@@ -559,6 +559,7 @@ func NotifyTcOverSelect2Student() error {
 		})
 		stu:=[]string{}
 		if  tcList[i].StuInfo != nil &&  len(tcList[i].StuInfo) > 0  {
+			finder["status"] = TeachCourseStatusLearning
 			for j:= range tcList[i].StuInfo{
 				stu = append(stu,tcList[i].StuInfo[j].GetString("sid"))
 				finder["stuInfo.cstatus"] = SCourseStatusSelecting
